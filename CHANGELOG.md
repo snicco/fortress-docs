@@ -1,3 +1,10 @@
+# [1.0.0-beta.38](https://github.com/snicco/enterprise/compare/1.0.0-beta.37...1.0.0-beta.38) (2024-03-30)
+
+
+### Bug Fixes
+
+* add missing config validation for password.store_hashes_encrypted ([2830e35](https://github.com/snicco/enterprise/commit/2830e3570e276e3214f61285d0b45f48fda3c0a2))
+
 # [1.0.0-beta.37](https://github.com/snicco/enterprise/compare/1.0.0-beta.36...1.0.0-beta.37) (2024-03-30)
 
 
