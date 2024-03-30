@@ -1,3 +1,16 @@
+# [1.0.0-beta.37](https://github.com/snicco/enterprise/compare/1.0.0-beta.36...1.0.0-beta.37) (2024-03-30)
+
+
+### Bug Fixes
+
+* respect potential user configs to configure snicco framework ([72cf6a3](https://github.com/snicco/enterprise/commit/72cf6a30a806fb4508407f33b18bf813e72a3d6e))
+
+
+### Features
+
+* disable password cli commands if strong pw hashing is not used ([aa7debd](https://github.com/snicco/enterprise/commit/aa7debdb8af182b031f078c590344de04d94f22a))
+* make encrypted password storage opt-in ([1365835](https://github.com/snicco/enterprise/commit/1365835ff6b981b5bb89b11cdf92eb5be93dbd65)), closes [#95](https://github.com/snicco/enterprise/issues/95)
+
 # [1.0.0-beta.36](https://github.com/snicco/enterprise/compare/1.0.0-beta.35...1.0.0-beta.36) (2024-03-16)
 
 

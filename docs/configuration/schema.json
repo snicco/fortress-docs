@@ -321,6 +321,11 @@
           "default": true,
           "description": "Whether Fortress should load its custom implementations of the 'wp_***' pluggable password functions."
         },
+        "store_hashes_encrypted": {
+          "type": "boolean",
+          "default": false,
+          "description": "Controls whether Fortress will store the strong argon2 password hashes encrypted."
+        },
         "disable_web_password_reset_for_roles": {
           "type": "array",
           "items": {

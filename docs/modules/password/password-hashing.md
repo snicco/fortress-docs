@@ -1,27 +1,33 @@
 # Secure password hashing
 
 <!-- TOC -->
-* [Fortress password hashing](#fortress-password-hashing)
-    * [Scheme](#scheme)
-    * [Security benefits](#security-benefits)
-* [What about existing passwords?](#what-about-existing-passwords)
-    * ["Competing" solutions -> Opportunistic password rehashing only](#-competing-solutions---opportunistic-password-rehashing-only)
+  * [Fortress password hashing](#fortress-password-hashing)
+    * [Argon2id + Blake2b HMAC (default)](#argon2id--blake2b-hmac-default)
+      * [Security benefits](#security-benefits)
+    * [Argon2id + authenticated encryption](#argon2id--authenticated-encryption)
+      * [Security benefits](#security-benefits-1)
+      * [Downsides](#downsides)
+    * [Switching between schemes](#switching-between-schemes)
+  * [Securing existing user passwords](#securing-existing-user-passwords)
+    * ["Competing" solutions -> Opportunistic password rehashing only](#competing-solutions---opportunistic-password-rehashing-only)
     * [Proactive password rehashing in Fortress](#proactive-password-rehashing-in-fortress)
     * [Force resetting all passwords](#force-resetting-all-passwords)
     * [Disallowing legacy hashes](#disallowing-legacy-hashes)
     * [Informing users about forced password resets](#informing-users-about-forced-password-resets)
-* [Compatability with Core and third-party plugins](#compatability-with-core-and-third-party-plugins)
+  * [Compatability with Core and third-party plugins](#compatability-with-core-and-third-party-plugins)
     * [TL;DR](#tldr)
     * [Detailed explanation](#detailed-explanation)
-        * [Doing it wrong 01](#doing-it-wrong-01)
-        * [Doing it wrong 02](#doing-it-wrong-02)
-        * [Doing it wrong 03](#doing-it-wrong-03)
-* [Migrating out hashes](#migrating-out-hashes)
+      * [Doing it wrong 01](#doing-it-wrong-01)
+      * [Doing it wrong 02](#doing-it-wrong-02)
+      * [Doing it wrong 03](#doing-it-wrong-03)
+      * [Doing it wrong 04—Resetting the user_pass column](#doing-it-wrong-04resetting-the-userpass-column)
+  * [Migrating out hashes](#migrating-out-hashes)
+  * [Disabling the secure password hashing](#disabling-the-secure-password-hashing)
 <!-- TOC -->
 
 ---
 
-As of 2023, WordPress still uses
+As of 2024, WordPress still uses
 a [md5 based hashing scheme](https://github.com/WordPress/WordPress/blob/master/wp-includes/class-phpass.php#L152)
 and there are [no hopes](https://core.trac.wordpress.org/ticket/39499) of that changing anytime soon.
 
@@ -32,39 +38,107 @@ cryptography bindings available in PHP.
 
 ## Fortress password hashing
 
-### Scheme
-
 Fortress replaces
 the [wp_hash_password](https://github.com/WordPress/WordPress/blob/master/wp-includes/pluggable.php#L2483)
-and [wp_check_password](https://github.com/WordPress/WordPress/blob/b879d0435401b8833bae66483895ffe189e5d35a/wp-includes/pluggable.php#L2533)
+,
+[wp_check_password](https://github.com/WordPress/WordPress/blob/b879d0435401b8833bae66483895ffe189e5d35a/wp-includes/pluggable.php#L2533)
+and [wp_set_password](https://github.com/WordPress/WordPress/blob/b879d0435401b8833bae66483895ffe189e5d35a/wp-includes/pluggable.php#L2705)
 functions.
 
-The hashing schema that Fortress uses is the following:
+There are two different types of hashing schemes that Fortress can use depending on
+the configuration of
+the [`password.store_hashes_encrypted`](../../configuration/02_configuration_reference.md#store_hashes_encrypted)
+option.
+
+### Argon2id + Blake2b HMAC (default)
 
 Given a user that provides the password `cocoa-hospital-wold-belt`:
 
-1. Calculate `hash = argon2(cocoa-hospital-wold-belt)`
+1. Calculate `argon2id_hash = argon2id(cocoa-hospital-wold-belt)`
    using [`sodium_crypto_pwhash_str`](https://www.php.net/manual/de/function.sodium-crypto-pwhash-str.php).
-2. Use [authenticated encryption](https://doc.libsodium.org/secret-key_cryptography/secretbox) to
-   calculate `ciphertext = encrypt(hash, user_id)`
-   using [`sodium_crypto_stream_xor`](https://www.php.net/manual/en/function.sodium-crypto-stream-xor.php).<br>
-   Fortress encrypts the password hash with the `ID` of the corresponding user as additional data.
-3. Store `ciphertext` in the database.
+2. Calculate `hmac = blake2b(user_id + argon2id_hash)`
+   using
+   keyed-Blake2B [`sodium_crypto_generichash`](https://www.php.net/manual/de/function.sodium-crypto-generichash.php).
+3. Store `hmac + argon2id_hash` in the database.
 
-### Security benefits
+#### Security benefits
+
+- Online brute-force attacks have a near zero chance of being successful.
+- Offline brute-force attacks are significantly more computation
+  intensive, [argon2 is the best password hashing scheme that's currently available](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id)
+  in PHP.
+-
+
+Prevents [confused deputy attacks](https://soatok.blog/2023/03/01/database-cryptography-fur-the-rest-of-us/#confused-deputies):
+An attacker can not swap his own password hash with the one of an admin user and log in using their own password.<br>
+A password hash is always bound to the user ID for which it was initially created.
+
+- An attacker with write access to the database can't insert new user accounts because they do not have the HMAC key
+  which is not stored in the database.
+
+### Argon2id + authenticated encryption
+
+If the [`password.store_hashes_encrypted`](../../configuration/02_configuration_reference.md#store_hashes_encrypted)
+option is set to `true`,
+Fortress will store the argon2id hashes encrypted in the database.
+
+(Encrypt then MAC -- xsalsa20 then keyed-Blake2b)
+
+Given a user that provides the password `cocoa-hospital-wold-belt`:
+
+1. Calculate `argon2id_hash = argon2id(cocoa-hospital-wold-belt)`
+   using [`sodium_crypto_pwhash_str`](https://www.php.net/manual/de/function.sodium-crypto-pwhash-str.php).
+2. Encrypt the argon2id hash using `xsalsa20`
+   calculate `encrypted_hash = xsalsa20(argon2id_hash)`
+   via [`sodium_crypto_stream_xor`](https://www.php.net/manual/en/function.sodium-crypto-stream-xor.php).
+3. Authenticate the encrypted hash using `keyed-Blake2b` with the user id as additional data.
+   calculate `hmac = blake2b(user_id + ciphertext)`
+   via [`sodium_crypto_generichash`](https://www.php.net/manual/de/function.sodium-crypto-generichash.php) and then
+   store `hmac + encrypted_hash` in the database.
+
+#### Security benefits
+
+This scheme provides all the benefits of the HMAC scheme above with the added benefit that:
 
 - An attacker that can access the database can't even begin to crack the password hashes because they are
-  encrypted with the [encryption key](../../getting-started/02_preparation.md#secrets) being stored in the filesystem.
-- Assuming full server compromise where the encryption key is also obtained, cracking password hashes offline is *
-  **significantly more computation intensive**.
-- Online brute force attacks have a near zero chance of being successful.
-- An attacker with write access to the database is not able to swap his own (known) password with the one of a more
-  privileged account since an encrypted hash is always bound to the user ID for which it was initially
-  created.
-- An attacker with write access to the database can't insert new user accounts because he does not have the encryption
-  key used for validation.
+  encrypted with the [encryption key](../../getting-started/02_preparation.md#secrets) which is stored outside the
+  database.
 
-## What about existing passwords?
+#### Downsides
+
+The encrypted scheme was the default until version `1.0.0-beta.36` of Fortress.
+
+We chose to make in opt-in because of the reasons below:
+
+1. Due to the added encryption,
+   the final string is greater than 255 character
+   which meant that we had to alter the `wp_users.user_pass` column from a `varchar(255)`
+   to a `varchar(350)`.
+   Fortress prevents any reset attempted/accidental reset via `dbDelta`. But some plugins might try to reset the column
+   via direct database calls (`$wpdb->query('ALTER TABLE ...'`) in which case all password
+   hashes will be truncated down to 255 characters which means they'd
+   be [crypto-shredded](https://en.wikipedia.org/wiki/Crypto-shredding) (if you can't restore a backup).
+   <br>While we think that the chance of that happening is very low & the impact is not big if you have a site with a
+   handful of "staff users" that could potentially just reset their password - It's not an ideal default for hosting
+   companies that deploy Fortress on a great variety of sides.
+2. It's tough to migrate out of the encrypted scheme.<br>
+   While it's possible to decrypt all the data, there's no way for Fortress to know what data was "hashed/encrypted"
+   by `wp_hash_password` aside of passwords since plugins might use it for input that is not a user's account password.
+   <br>For that reason, leaving behind a compatability layer that would allow removing Fortress while keeping the hashes
+   intact would inevidablty requires leaving Fortress's encryption code behind and also secure manage Fortress's
+   encryption secret.
+
+We still recommend using the encrypted scheme if you (as the site owner) can live with, or handle the downsides above.
+
+### Switching between schemes
+
+At any time you can switch between both schemes by changing the
+[`password.store_hashes_encrypted`](../../configuration/02_configuration_reference.md#store_hashes_encrypted) option.
+
+Both schemes are compatible with each other, and a user's password will be rehashed automatically with the current
+active scheme after they log in.
+
+## Securing existing user passwords
 
 ### "Competing" solutions -> Opportunistic password rehashing only
 
@@ -73,7 +147,8 @@ better alternatives.
 
 However, none of them can rehash existing legacy password hashes proactively.
 
-Instead, typically, a user's password hash is only rehashed after successfully logging in (because this is the only time you have access to his plaintext password).
+Instead, typically, a user's password hash is only rehashed after successfully logging in (because this is the only time
+you have access to his plaintext password).
 It's an "opportunistic upgrade" strategy which is
 a [bad play](https://nakedsecurity.sophos.com/2016/12/15/yahoo-breach-ive-closed-my-account-because-it-uses-md5-to-hash-my-password/).
 
@@ -93,7 +168,8 @@ Here is the (very) simplified summary of how this works:
 
 2. Fortress inspects `legacy_hash` and can extract the hash settings (`legacy_hash_settings`) needed to reproduce
    the same hash output for a given plaintext password (e.g., salts, costs, rounds, etc.).
-   <br>`legacy_hash_settings` is then stored in the database.<br><br>Fortress can detect legacy hashes created from the following sources:
+   <br>`legacy_hash_settings` is then stored in the database.<br><br>Fortress can detect legacy hashes created from the
+   following sources:
     - plain md5
     - phpass in compat mode
     - phpass with blowfish
@@ -103,25 +179,27 @@ Here is the (very) simplified summary of how this works:
     - crypt(sha512)
     - argon2
     - argon2id
-3. Fortress updates the user's password hash to `upgraded_legacy_hash = encryption(argon2(legacy_hash))`.
-4. Once a user tries to log in with his (unchanged) password, Fortress checks
-   if `upgraded_legacy_hash === encryption(argon2(legacy_hash_algo(password, legacy_hash_settings)))`.
+3. Fortress updates the user's password hash to `upgraded_legacy_hash = fortress_hashing(legacy_hash))`.
+4. Once a user tries to log in with their (unchanged) password, Fortress checks
+   if `upgraded_legacy_hash === fortress_hashing(legacy_hash_algo(password, legacy_hash_settings)))`.
 5. The user is authenticated, and Fortress deletes `legacy_hash_settings` and
-   stores `new_strong_hash = encryption(argon2(password))`.
+   stores `new_strong_hash = fortress_hashing(password))`.
 
-You can perform this process automatically in batches **without** disrupting regular site operations using
+You can perform this process automatically for all your users in batches **without** disrupting regular site operations using
 Fortress's [`wp snicco/fortress password upgrade-legacy-hashes` command](../../wp-cli/readme.md#upgrade-legacy-hashes).
 
 ### Force resetting all passwords
 
-The only downside to proactively rehashing all existing password hashes is that the plaintext passwords might be very insecure.
+The only downside to proactively rehashing all existing password hashes is that the plaintext passwords might be very
+insecure.
 
 > You can have the most secure password hashing in the world, but it doesn't matter if a user's password is "qwerty".
 
 There is no way to check if stored password hashes resulted from secure passwords since we don't have access to the
 plaintexts.
 
-Fortress allows you to force reset all or a subset of users' passwords, so they have to choose a new password that complies with Fortress's [password policy](password-policy.md).
+Fortress allows you to force-reset all or a subset of users' passwords, so they have to choose a new password that
+complies with Fortress's [password policy](password-policy.md).
 
 Surprisingly, there is no option in WordPress to bulk-reset user passwords.
 
@@ -149,7 +227,7 @@ He can log in using `johndoe/password` as his credentials.
 Fortress allows you to completely prevent this from happening by setting
 the [`allow_legacy_hashes`](../../configuration/02_configuration_reference.md#allow_legacy_hashes) to `false`.
 
-From there on, only password hashes that use Fortress's encryption + hashing scheme will be accepted.
+From there on, only password hashes that use Fortress's secure hashing scheme will be accepted.
 
 An attacker can never "pin" a password hash this way unless he has a full server compromise to read Fortress's
 encryption keys.
@@ -203,7 +281,7 @@ add_filter('login_message', function (string $message) :string{
 
 ### TL;DR
 
-The entire Fortress password hashing functionality is 100% compatible unless a plugin does something wrong.
+The entire Fortress password hashing functionality is 100% compatible unless a plugin does something very wrong.
 
 ### Detailed explanation
 
@@ -273,10 +351,7 @@ $hash = $wp_hasher->HashPassword($secret);
 wp_check_password('super-secret', $hash);
 ```
 
-WordPress Core does not contain this error after WP 6.2.
-
-Prior to WP 6.2 Core had a bug with recovery mode tokens that we found and fixed.
-See the [ticket on trac](https://core.trac.wordpress.org/ticket/56787#ticket).
+WordPress Core does not contain this error [anymore](https://core.trac.wordpress.org/ticket/56787#ticket) (6.2+).
 
 You can use the below snippet to allow legacy hashes at runtime which can be useful to "hotfix" a bug
 in plugin code.
@@ -296,24 +371,65 @@ add_action(CheckingGenericHash::class, function (CheckingGenericHash $event) :vo
 });
 ```
 
-
 #### Doing it wrong 03
 
-A more hypothetical issue listed here for completeness is making assumptions about the output length of `wp_hash_password`.
+A more hypothetical issue listed here for completeness is making assumptions about the output length
+of `wp_hash_password`.
 
 The hash that is generated by default in WordPress has a length of `34` characters.
 
-Due to the authenticated encryption, the output of Fortress's `wp_hash_password` implementation is `303` characters.
+The output of Fortress's `wp_hash_password` implementation is much larger (at least `200+` characters).
 
-So far, we have **never seen** a situation where this has been an issue.
+So far, we have never seen a situation where this has been an issue.
+
+#### Doing it wrong 04—Resetting the user_pass column
+
+This issue is listed here for completeness and is only relevant if you're
+using the [encrypted password hashing scheme](#downsides).
+
+Upon activation, Fortress will change the wp_users.user_pass column to a `varchar(350)` instead
+of the `varchar(255)` that WordPress uses by default.
+
+This is required to store the encrypted password hashes.
+
+Fortress prevents any reset of the user_pass column to `varchar(255)` that's performed with the `dbDelta` function.
+
+However, some plugins might try to reset/alter the `wp_users` table via direct database calls.
+
+If the size of the `user_pass` column is reset to `varchar(255)` the currently stored data will be truncated and
+hashes will be invalid and can only be restored by resetting the password or by restoring a backup.
+
+You can verify if this happened by running the following database query:
+
+```sql
+SELECT ID, LENGTH(user_pass) AS pass_length
+FROM wp_users;
+```
 
 ## Migrating out hashes
 
-If Fortress is uninstalled WordPress will fall back to its default implementation of `wp_(hash/check)_password`.
+If Fortress is removed WordPress will fall back to its default implementation of `wp_(hash/check)_password`.
 
-That means that all password hashes that Fortress has created will not be valid anymore, and **all users have to reset their password**.
+That means that all password hashes that Fortress has created will not be valid anymore, and **all users have to reset
+their password** and other data that was hashed with `wp_hash_password`.
 
-There is currently no good solution to "migrating out" the encrypted password hashes.
+Since hashing is a one-way function, there is no way to restore the original legacy hashes. 
+
+We're working on a solution
+that would allow you to keep supporting Fortress hashes after removal via a custom snippet / must-use plugin.
+
+## Disabling the secure password hashing
+
+If the possibility of having to reset users' passwords is not acceptable under any circumstance, you can disable the
+secure password hashing
+functionality
+by setting
+the [`password.include_pluggable_functions`](../../configuration/02_configuration_reference.md#include_pluggable_functions)
+option to `false`.
+
+You will still be able to use all the other functionality of the password module such as password policies,
+but the default (md5-based) password
+hashing scheme of WordPress will be used.
 
 ---
 

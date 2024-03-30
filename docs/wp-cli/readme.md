@@ -487,6 +487,8 @@ The commands in the `wp snicco/fortress password` namespace belong to the [passw
 
 #### upgrade-legacy-hashes
 
+**Note:** This command is not available if [`password.include_pluggable_functions`](../configuration/02_configuration_reference.md#include_pluggable_functions) is set to `false`.
+
 The `wp snicco/fortress password upgrade-legacy-hashes` command can be used to upgrade all password hashes of existing users to [Fortress's secure password hashing](../modules/password/password-hashing.md).
 
 This command might take a significant amount of time, depending on the size of your database.
@@ -549,6 +551,8 @@ OPTIONS
 ```
 
 #### force-reset-all
+
+**Note:** This command is not available if [`password.include_pluggable_functions`](../configuration/02_configuration_reference.md#include_pluggable_functions) is set to `false`.
 
 The `wp snicco/fortress password force-reset-all` can be used to reset the password of all users to a randomly generated one.
 
@@ -627,6 +631,8 @@ OPTIONS
 ```
 
 #### password reset
+
+**Note:** This command is not available if [`password.include_pluggable_functions`](../configuration/02_configuration_reference.md#include_pluggable_functions) is set to `false`.
 
 The `wp snicco/fortress password reset` command can be used to set a new, randomly-generated, and secure password for a user.
 

@@ -205,6 +205,7 @@ The configuration for a multisite is slightly different.
     "disable_application_passwords": true,
     "allow_legacy_hashes": true,
     "default_hash_strength": "moderate",
+    "store_hashes_encrypted": false,
     "auto_upgrade_hashes": true,
     "include_pluggable_functions": true,
     "disable_web_password_reset_for_roles": [
@@ -824,6 +825,18 @@ Settings this option to `false` is highly recommended if one of the following co
 2. All legacy password hashes have been upgraded by Fortress using
    the [WP-CLI command](../wp-cli/readme.md#upgrade-legacy-hashes).
 
+### store_hashes_encrypted
+
+- Key: `store_hashes_encrypted`
+- Type: `bool`
+- Default: `false`
+
+The `store_hashes_encrypted` option controls whether Fortress will store argon2id password hashes encrypted.
+
+You can change this setting at any time to true/false, without invalidating existing password hashes. 
+
+More information: [Fortress password hashing](../modules/password/password-hashing.md#fortress-password-hashing).
+
 ### default_hash_strength
 
 - Key: `default_hash_strength`
@@ -864,9 +877,16 @@ you plan on removing it.
 
 Whether Fortress should load its custom implementations of the "wp_***" pluggable password functions.
 
-Fortress will not load it's custom password hashing at all if this option is set to `false`.
+Fortress will not load it's custom password hashing at all if this option is set to `false`
+and WordPress's default md5-based password hashing will be used. 
 
-Only disable this option if you have a good reason to do so.
+Setting this option to `false` will also disable most of Fortress's password CLI commands.
+
+Setting this option to `false` is only recommended if you plan on removing Fortress without
+the need to reset passwords for all users.
+
+Even if this is set to `false`, you can still use all other functionality of the password module, like enforcing password policies, disabling
+password resets, etc.
 
 ### disable_web_password_reset_for_roles
 
