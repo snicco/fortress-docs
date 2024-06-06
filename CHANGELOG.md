@@ -1,3 +1,37 @@
+# [1.0.0-beta.39](https://github.com/snicco/enterprise/compare/1.0.0-beta.38...1.0.0-beta.39) (2024-06-06)
+
+
+### Bug Fixes
+
+* all mapped core capabilities can now be used in config options without warnings ([382cbfa](https://github.com/snicco/enterprise/commit/382cbfa3f76204a060979c122f897fcd42478761))
+* no config warnings for theme_css_file on old wp versions ([21d4eb6](https://github.com/snicco/enterprise/commit/21d4eb6024567ce22b408d63c8f760c873c1759d))
+* remove notice raised by calling get_users during cache build ([54a5d98](https://github.com/snicco/enterprise/commit/54a5d98ed8f75b4855a18e8e7d4c50dd20c0dac1))
+* support wp core runtime caps as protected capabilities without config warnings ([406efe4](https://github.com/snicco/enterprise/commit/406efe448bcf4435551b6bf14d379eb79381e301))
+
+
+### Features
+
+* 'config source' command fails gracefully for completely broken user configs ([5a9d334](https://github.com/snicco/enterprise/commit/5a9d33480a815f7ac15ec338b24492558bfb3a02))
+* add :locked and :except notation for config sources ([c478c70](https://github.com/snicco/enterprise/commit/c478c70c3b692fb3eb6445828ea2c635d6717af5))
+* add :merge notation that can merge custom option values with the baseline ([57ecdc2](https://github.com/snicco/enterprise/commit/57ecdc211183f55d6a23dcd610a6cc1cd44c1213))
+* add 'config test --skip-stateful-checks' flag for ci environments ([61076bc](https://github.com/snicco/enterprise/commit/61076bc943a264cdc0b8b0a6b0b9972acf6ef74b))
+* add config optimize command ([1b6c24e](https://github.com/snicco/enterprise/commit/1b6c24e0e6c8491fc773d7cdecd764e4408ed817))
+* add config update command ([bce0352](https://github.com/snicco/enterprise/commit/bce035269be059d24b10a29e3195bc06c21f7bdd))
+* add new db_table_namespace option ([c46bc1b](https://github.com/snicco/enterprise/commit/c46bc1bb91b4ed1c2425719d0aa1bc698afaa51d))
+* allow toggling sudo mode by username/email and id ([43de89a](https://github.com/snicco/enterprise/commit/43de89a68e435c4fe436773708d12a214ef23824))
+* config test commands supports reading from stdin ([5ac8913](https://github.com/snicco/enterprise/commit/5ac89131563c9fd12292fd48836ee0f6b902b158)), closes [#128](https://github.com/snicco/enterprise/issues/128)
+* config validation - ensure no array options can have duplicates ([e7161b9](https://github.com/snicco/enterprise/commit/e7161b95b54d1bff91ac6b19e9af8686823f918e)), closes [#157](https://github.com/snicco/enterprise/issues/157)
+* config validation rules for crucial options that should not be empty arrays ([f321b99](https://github.com/snicco/enterprise/commit/f321b9967ce71733d1b61c025e2d4c4b7bb28629))
+* don't disable application passwords in baseline configuration ([764abb6](https://github.com/snicco/enterprise/commit/764abb6aa0a5d24ed80a1a57bcd75172af3a2086)), closes [#70](https://github.com/snicco/enterprise/issues/70)
+* fail gracefully if an audit log entry can't be json encoded ([6a5095a](https://github.com/snicco/enterprise/commit/6a5095acc70f888904c3693527ba0b4c90ff8d11))
+* fortress cli v1.0.0 ([7056004](https://github.com/snicco/enterprise/commit/7056004375614e661f13adebf9e59bf02cc5fcbf))
+* less intrusive colors for sudo mode admin bar notice ([e49f8e4](https://github.com/snicco/enterprise/commit/e49f8e46a504d481a29bfe88e0b310db1b413589))
+* make edit_user a protected capability in addition to being a protected page ([c7dd83b](https://github.com/snicco/enterprise/commit/c7dd83b16263cf1de1f1b4e2ce1902ed71e52bbc))
+* separate allow_legacy_hashes into two options for passwords and non-passwords ([64b0e33](https://github.com/snicco/enterprise/commit/64b0e33c1e6d4eb66e79be00ca23eb08be1bf34f))
+* support .php configuration files ([2f57263](https://github.com/snicco/enterprise/commit/2f57263b2e5b2cc6d87f9cb796342e6ec72b5c70))
+* theme_css_file config validation allow self-signed ssl cert in local env ([49f10bc](https://github.com/snicco/enterprise/commit/49f10bc92af0326f1409ee89b33ba0843302f659))
+* validate that entire modules can be safely disabled ([b738248](https://github.com/snicco/enterprise/commit/b738248f0ad74c7a1239673b7948c515e5600631))
+
 # [1.0.0-beta.38](https://github.com/snicco/enterprise/compare/1.0.0-beta.37...1.0.0-beta.38) (2024-03-30)
 
 

@@ -338,8 +338,8 @@ WordPress Core does not contain this error.
 
 #### Doing it wrong 02
 
-The below code is also an obvious programmatic error, but it will still work with Fortress **UNLESS** Fortress is
-configured to [disallow legacy hashes](../../configuration/02_configuration_reference.md#allow_legacy_hashes).
+The below code is also an obvious programmatic error, but it will still work with Fortress **UNLESS** you explicitly set
+[allow_legacy_hashes_for_non_passwords](../../configuration/02_configuration_reference.md#allow_legacy_hashes_for_non_passwords) to `false`.
 
 ```php
 $secret = 'super-secret';
@@ -351,25 +351,8 @@ $hash = $wp_hasher->HashPassword($secret);
 wp_check_password('super-secret', $hash);
 ```
 
-WordPress Core does not contain this error [anymore](https://core.trac.wordpress.org/ticket/56787#ticket) (6.2+).
-
-You can use the below snippet to allow legacy hashes at runtime which can be useful to "hotfix" a bug
-in plugin code.
-
-```php
-use Snicco\Enterprise\Fortress\Password\Infrastructure\Event\CheckingGenericHash;
-
-add_action(CheckingGenericHash::class, function (CheckingGenericHash $event) :void {
-    
-    // Overwrite this variable with your own logic.
-    $allow_generic_legacy_hash = false;
-    
-    if($allow_generic_legacy_hash){
-        $event->allow_legacy_hash = true;
-    }    
-
-});
-```
+WordPress Core does not contain this error [anymore](https://core.trac.wordpress.org/ticket/56787#ticket)
+(6.2+).
 
 #### Doing it wrong 03
 

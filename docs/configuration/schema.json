@@ -65,7 +65,7 @@
       "type": "string",
       "minLength": 1,
       "pattern": "^\\/(?!.*\\/\\/)([a-zA-Z\\-\\/]+)$",
-      "default": "/wp-content/plugins/snicco-fortress/default-theme.css",
+      "default": "/wp-content/mu-plugins/snicco-fortress/default-theme.css",
       "description": "A path to an existing CSS file that defines CSS variables to customize the frontend appearance of Fortress. Relative to the domain."
     },
     "session": {
@@ -188,7 +188,7 @@
             "/wp-admin/profile.php",
             "/wp-admin/update.php",
             "/wp-admin/options-*",
-            "wp-admin/authorize-application.php",
+            "/wp-admin/authorize-application.php",
             "/wp-admin/tools.php",
             "/wp-admin/import.php",
             "/wp-admin/export.php",

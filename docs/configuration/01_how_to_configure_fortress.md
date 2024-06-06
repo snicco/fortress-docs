@@ -15,6 +15,7 @@
   * [Viewing your current configuration](#viewing-your-currently-cached-configuration)
   * [Clearing the configuration cache](#clearing-the-configuration-cache)
     * [Self-invalidation](#self-invalidation)
+      * [Custom parameters](#custom-parameters)
 <!-- TOC -->
 
 ## Approach
@@ -180,7 +181,7 @@ add_action(
 
 ### Viewing configuration sources
 
-Fortress contains a CLI command that can be used to view all your configuration
+Fortress contains a CLI command that can be used to view all your registered configuration
 sources as JSON. 
 
 It's very useful for troubleshooting how your configuration sources make up the final
@@ -194,32 +195,19 @@ Example output:
 
 ```json
 {
-    "appliance": {
-        "type": "appliance",
-        "defined_by": "SNICCO_FORTRESS_APPLIANCE_CONFIG_FILE",
-        "is_defined": false,
-        "file_path": null,
-        "file_exists": null,
-        "content": null
-    },
     "server": {
         "type": "server",
-        "defined_by": "SNICCO_FORTRESS_SERVER_CONFIG_FILE",
-        "is_defined": true,
         "file_path": "/etc/fortress/server.json",
         "file_exists": false,
         "content": null
     },
     "site": {
         "type": "site",
-        "defined_by": "SNICCO_FORTRESS_SITE_CONFIG_FILE",
-        "is_defined": true,
         "file_path": "/var/www/site.json",
         "file_exists": false,
         "content": null
     }
 }
-
 ```
 
 Refer to the [full command reference](../wp-cli/readme.md#config-sources) for further information.
@@ -359,6 +347,8 @@ In automated environments,
 it's recommended to run the `config:test` command before updating Fortress in order to prevent a cache build
 with invalid configuration, which would lead to Fortress being unable to boot.
 
+#### Custom parameters
+
 You can extend this list by providing your own cache invalidation parameters by defining
 the following ENV variable, either by setting in the `$_SERVER` super global, or by passing it through the SAPI.
 
@@ -369,7 +359,13 @@ $_SERVER['SNICCO_FORTRESS_EXTRA_CACHE_INVALIDATION_PARAMS'] = 'your-values-here'
 `SNICCO_FORTRESS_EXTRA_CACHE_INVALIDATION_PARAMS` must be defined before Fortress's main plugin file is loaded to have an effect. 
 Furthermore, if defined, the value **MUST** be a `non-empty-string`.
 
----
+You can use this feature, for example, to invalidate the Fortress cache after
+deploying a GIT-controlled site where the Fortress configuration files live in your repository.
 
+```php
+$_SERVER['SNICCO_FORTRESS_EXTRA_CACHE_INVALIDATION_PARAMS'] = 'your-git-commit-hash';
+```
+
+---
 
 Next: [Complete configuration reference](02_configuration_reference.md)
