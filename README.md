@@ -1,6 +1,6 @@
 # Snicco Fortress
 
-This repository contains the public artifacts of the [Fortress](https://fortress.snicco.io).
+This repository contains the public artifacts of [Fortress](https://fortress.snicco.io).
 
 ## Documentation
 
