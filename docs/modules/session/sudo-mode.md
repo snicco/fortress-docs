@@ -34,7 +34,7 @@ user's session from a high-privileged to a low-privileged state.
 This means certain sensitive actions become restricted
 unless the user re-confirms their credentials.
 
-The essence of this mechanism relies on two main components:
+The essence of this mechanism relies on two main parts:
 
 - protected capabilities
 - and protected pages.
@@ -96,10 +96,10 @@ If users don't re-authenticate prior to the sudo timeout:
   This restriction is implemented by filtering out all set [protected capabilities](#protected-capabilities) at runtime.
 - Fortress employs official WordPress APIs for these operations, ensuring seamless functionality.
 
-Consider a scenario where a user accesses the post overview page:
+Consider a scenario where a user accesses the "all posts" page:
 
-- While editing and viewing remain available, specific functions, such as bulk post deletion (
-  a [protected capability](#protected-capabilities)), are disabled.
+- While editing and viewing remain available, specific functions, such as bulk post deletion
+  (a [protected capability](#protected-capabilities)), are disabled.
 - WordPress automatically removes certain functionalities and menu items, like the "Settings" and "Plugins" menu items
   are no longer visible.
 
@@ -121,45 +121,46 @@ Fortress recognizes the following capabilities as protected. As a result, only u
 It's worth noting that most of these capabilities are typically reserved for administrators.
 Hence, **everyday users or content editors will largely remain unaffected by these restrictions**.
 
-| Capability                | Reason                                                                                                 |
-|---------------------------|--------------------------------------------------------------------------------------------------------|
-| `administrator`           | Wrongfully used by many plugins to check if a user is an admin.                                        |
-| `activate_plugins`        | Allows activation of plugins. Restricted to prevent unwanted or malicious plugins.                     |
-| `delete_plugins`          | Allows deletion of plugins. Restricted to safeguard essential plugins.                                 |
-| `delete_themes`           | Allows theme deletion. Restricted to protect the site's appearance and functionality.                  |
-| `delete_users`            | Grants user deletion privileges. Restricted to prevent unauthorized user removal.                      |
-| `edit_dashboard`          | Provides access to edit the dashboard. Restricted to maintain dashboard integrity.                     |
-| `edit_files`              | Permits direct file editing. Restricted to prevent unwanted file modifications.                        |
-| `edit_plugins`            | Allows plugin file edits. Restricted to prevent plugin tampering or injection.                         |
-| `edit_theme_options`      | Grants theme option modifications. Restricted to maintain site appearance and settings.                |
-| `edit_themes`             | Grants access to edit theme files. Restricted to prevent tampering with theme.                         |
-| `edit_users`              | Allows editing user profiles. Restricted to prevent unauthorized user profile changes.                 |
-| `export`                  | Permits data export. Restricted to prevent unauthorized data exports.                                  |
-| `import`                  | Grants data import capabilities. Restricted to avoid malicious or unwanted data imports.               |
-| `install_plugins`         | Grants plugin installation. Restricted to avoid malicious plugin installations.                        |
-| `install_themes`          | Allows theme installations. Restricted to safeguard site appearance.                                   |
-| `manage_options`          | Provides access to various settings. Restricted to preserve site configurations.                       |
-| `promote_users`           | Allows user role changes. Restricted to maintain role hierarchies.                                     |
-| `remove_users`            | Grants user removal capabilities. Restricted to prevent unauthorized removals.                         |
-| `list_users`              | Permits viewing user lists. Restricted to protect user privacy.                                        |
-| `create_users`            | Allows user creation. Restricted to prevent unauthorized user additions.                               |
-| `switch_themes`           | Grants theme switching. Restricted to maintain site's appearance and user experience.                  |
-| `unfiltered_upload`       | Permits uploads without filtering. Restricted to avoid uploads of JS and HTML files.                   |
-| `update_core`             | Grants WordPress core update. Restricted to ensure stable updates and site integrity.                  |
-| `update_plugins`          | Allows plugin updates. Restricted to avoid compatibility or security issues.                           |
-| `update_themes`           | Permits theme updates. Restricted to maintain site appearance and stability.                           |
-| `manage_categories`       | Allows category management. Restricted to maintain content taxonomy.                                   |
-| `delete_pages`            | Grants page deletion. Restricted to prevent loss of critical site pages.                               |
-| `delete_private_pages`    | Permits deletion of private pages. Restricted to maintain content integrity.                           |
-| `delete_published_pages`  | Allows deleting published pages. Restricted to preserve site structure and content.                    |
-| `delete_others_pages`     | Grants deletion of pages by other users. Restricted to maintain content consistency.                   |
-| `delete_posts`            | Grants post deletion. Restricted to maintain content consistency.                                      |
-| `delete_private_posts`    | Permits deletion of private posts. Restricted to maintain content integrity.                           |
-| `delete_published_posts`  | Allows deleting published posts. Restricted to maintain content consistency.                           |
-| `delete_others_posts`     | Grants deletion of posts by other users. Restricted to maintain content quality and consistency.       |
-| `edit_comment`            | Provides access to edit and delete comments. Restricted to prevent unauthorized comment modifications. |
-| `view_site_health_checks` | Grants access to site health data. Restricted to protect sensitive site info.                          |
-| `install_languages`       | Allows language installations. Restricted to maintain site language consistency.                       |
+| Capability                | Reason                                                                                                        |
+|---------------------------|---------------------------------------------------------------------------------------------------------------|
+| `administrator`           | Wrongfully used by many plugins to check if a user is an admin.                                               |
+| `activate_plugins`        | Allows activation of plugins. Restricted to prevent unwanted or malicious plugins.                            |
+| `delete_plugins`          | Allows deletion of plugins. Restricted to safeguard essential plugins.                                        |
+| `delete_themes`           | Allows theme deletion. Restricted to protect the site's appearance and functionality.                         |
+| `delete_users`            | Grants user deletion privileges. Restricted to prevent unauthorized user removal.                             |
+| `edit_dashboard`          | Provides access to edit the dashboard. Restricted to maintain dashboard integrity.                            |
+| `edit_files`              | Permits direct file editing. Restricted to prevent unwanted file modifications.                               |
+| `edit_plugins`            | Allows plugin file edits. Restricted to prevent plugin tampering or injection.                                |
+| `edit_theme_options`      | Grants theme option modifications. Restricted to maintain site appearance and settings.                       |
+| `edit_themes`             | Grants access to edit theme files. Restricted to prevent tampering with theme.                                |
+| `edit_user`               | Allows changing passwords and application passwords. Restricted to prevent unauthorized user profile changes. |
+| `edit_users`              | Allows editing user profiles. Restricted to prevent unauthorized user profile changes.                        |
+| `export`                  | Permits data export. Restricted to prevent unauthorized data exports.                                         |
+| `import`                  | Grants data import capabilities. Restricted to avoid malicious or unwanted data imports.                      |
+| `install_plugins`         | Grants plugin installation. Restricted to avoid malicious plugin installations.                               |
+| `install_themes`          | Allows theme installations. Restricted to safeguard site appearance.                                          |
+| `manage_options`          | Provides access to various settings. Restricted to preserve site configurations.                              |
+| `promote_users`           | Allows user role changes. Restricted to maintain role hierarchies.                                            |
+| `remove_users`            | Grants user removal capabilities. Restricted to prevent unauthorized removals.                                |
+| `list_users`              | Permits viewing user lists. Restricted to protect user privacy.                                               |
+| `create_users`            | Allows user creation. Restricted to prevent unauthorized user additions.                                      |
+| `switch_themes`           | Grants theme switching. Restricted to maintain site's appearance and user experience.                         |
+| `unfiltered_upload`       | Permits uploads without filtering. Restricted to avoid uploads of JS and HTML files.                          |
+| `update_core`             | Grants WordPress core update. Restricted to ensure stable updates and site integrity.                         |
+| `update_plugins`          | Allows plugin updates. Restricted to avoid compatibility or security issues.                                  |
+| `update_themes`           | Permits theme updates. Restricted to maintain site appearance and stability.                                  |
+| `manage_categories`       | Allows category management. Restricted to maintain content taxonomy.                                          |
+| `delete_pages`            | Grants page deletion. Restricted to prevent loss of critical site pages.                                      |
+| `delete_private_pages`    | Permits deletion of private pages. Restricted to maintain content integrity.                                  |
+| `delete_published_pages`  | Allows deleting published pages. Restricted to preserve site structure and content.                           |
+| `delete_others_pages`     | Grants deletion of pages by other users. Restricted to maintain content consistency.                          |
+| `delete_posts`            | Grants post deletion. Restricted to maintain content consistency.                                             |
+| `delete_private_posts`    | Permits deletion of private posts. Restricted to maintain content integrity.                                  |
+| `delete_published_posts`  | Allows deleting published posts. Restricted to maintain content consistency.                                  |
+| `delete_others_posts`     | Grants deletion of posts by other users. Restricted to maintain content quality and consistency.              |
+| `edit_comment`            | Provides access to edit and delete comments. Restricted to prevent unauthorized comment modifications.        |
+| `view_site_health_checks` | Grants access to site health data. Restricted to protect sensitive site info.                                 |
+| `install_languages`       | Allows language installations. Restricted to maintain site language consistency.                              |
 
 On a **WordPress Multisite**, additional capabilities are protected:
 
@@ -195,41 +196,43 @@ in your wp-config.php file
 
 ### Configuring Protected Capabilities
 
-You have two methods at your disposal to alter the list of protected capabilities:
+The best way to customize the list of protected capabilities is by
+using Fortress's `:merge` and `:except` [notations](../../configuration/01_how_to_configure_fortress.md#merging-configuration-values)
+on the [`protected_capabilities`](../../configuration/02_configuration_reference.md#protected_capabilities) option.
 
-1. **Custom List:** Begin with a blank slate by defining your unique list of protected capabilities. You can achieve
-   this using the
-   [`protected_capabilities`](../../configuration/02_configuration_reference.md#protected_capabilities) option.<br>
-   ⚠️ Be cautious: Utilizing this method will overwrite Fortress's default protected capabilities!
-2. **Using WordPress Hooks:** This method allows you to add or remove specific capabilities using WordPress hooks.
+To add a one protected capability, while still keeping all the default protected capabilities,
+use the `config update` [command](../../configuration/01_how_to_configure_fortress.md#updating-configuration-sources-programmatically):
 
-```php
-<?php
-
-/*
-* Plugin Name: Customize Fortress's Protected Capabilities
-*/
-
-use Snicco\Enterprise\Fortress\Session\Infrastructure\Event\DeterminingProtectedCapabilities;
-
-add_action(DeterminingProtectedCapabilities::class, function (DeterminingProtectedCapabilities $event) :void {
-    
-    // Add a single capability.
-    $event->addProtectedCapability('my_custom_capability');
-    // Add multiple capabilities.
-    $event->addProtectedCapability('my_custom_capability_1', 'my_custom_capability_2');
-   
-   // Remove a single capability.
-    $event->removeProtectedCapability('my_custom_capability');
-    // Remove multiple capabilities.
-    $event->removeProtectedCapability('my_custom_capability_1', 'my_custom_capability_2');
-});
+```shell
+wp fort config update session.protected_capabilities:merge+=my_custom_capability
 ```
 
-**Key Point:** Ensure your hook callback is initialized before the `plugins_loaded` hook gets triggered.
+To remove a capability (in this case `administrator`), while keeping all other default protected capabilities:
 
-To incorporate the callback, you can either place it in a custom plugin or within a must-use plugin. However, **don't
-attempt to add it to the theme's functions.php** file — it's too late in the process and will not function correctly.
+```shell
+wp fort config update session.protected_capabilities:except+=administrator
+```
+
+To use a completely custom list of capabilities that removes all the defaults:
+
+```shell
+wp fort config update session.protected_capabilities='["install_plugins"]'
+```
+
+The above will only make the `install_plugins` capability protected.
+
+Install of using Fortress CLI,
+you can of course also edit your [configuration sources](../../configuration/01_how_to_configure_fortress.md#configuration-sources) manually.
+
+For example, to replicate the above command:
+
+```json
+{
+  "session": {
+    "protected_capabilities": ["install_plugins"]
+  }
+}
+```
 
 ## Protected Pages
 
@@ -265,7 +268,7 @@ primarily accessible to administrators:
 | `/wp-admin/theme-editor.php`         | Provides a code editor to modify theme files directly.                                                      |
 | `/wp-admin/plugin-editor.php`        | Provides a code editor to modify plugin files directly.                                                     |
 
-For those utilizing **WordPress Multisite**, additional protected pages come into play:
+For those using **WordPress Multisite**, additional protected pages come into play:
 
 | Page                               | Functionality & Usage                                                                      |
 |------------------------------------|--------------------------------------------------------------------------------------------|
@@ -281,29 +284,44 @@ For those utilizing **WordPress Multisite**, additional protected pages come int
 
 ### Configuring Protected Pages
 
-You have two methods at your disposal to alter the list of protected capabilities:
 
-1. **Custom List:** Begin with a blank slate by defining your unique list of protected pages.
-   You can achieve this using the
-   [`protected_pages`](../../configuration/02_configuration_reference.md#protected_pages) option.<br>
-   ⚠️ Be cautious: Utilizing this method will overwrite Fortress's default protected pages!
-2. **Using WordPress Hooks:** This method allows you to add specific pages using WordPress hooks.
+The best way to customize the list of protected pages is by
+using Fortress's `:merge` and `:except` [notations](../../configuration/01_how_to_configure_fortress.md#merging-configuration-values)
+on the [`protected_pages`](../../configuration/02_configuration_reference.md#protected_pages) option.
 
-```php
-<?php
+To add a one protected page (`/checkout`), while still keeping all the default protected pages,
+use the `config update` [command](../../configuration/01_how_to_configure_fortress.md#updating-configuration-sources-programmatically):
 
-/*
-* Plugin Name: Customize Fortress's Protected Pages
-*/
+```shell
+wp fort config update session.protected_pages:merge+=/checkout
+```
 
-use Snicco\Enterprise\Fortress\Session\Infrastructure\Event\ConfirmingSudoMode;
+To remove a protected page (in this case `/wp-admin/plugins.php`),
+while keeping all other default protected pages:
 
-add_action(ConfirmingSudoMode::class, function (ConfirmingSudoMode $event) :void {
-    $event->addProtectedPath('/my-account');
-    
-    // "*" Can be used as a wildcard.
-    $event->addProtectedPath('/parent-page/*');
-});
+```shell
+wp fort config update session.protected_pages:except+=/wp-admin/plugins.php
+```
+
+To use a completely custom list of pages that removes all the defaults:
+
+```shell
+wp fort config update session.protected_pages='["/wp-admin/plugins.php"]'
+```
+
+The above will only make the `/wp-admin/plugins.php` page protected.
+
+Install of using Fortress CLI,
+you can of course also edit your [configuration sources](../../configuration/01_how_to_configure_fortress.md#configuration-sources) manually.
+
+For example, to replicate the above command:
+
+```json
+{
+  "session": {
+    "protected_pages": ["/wp-admin/plugins.php"]
+  }
+}
 ```
 
 #### Wildcards
@@ -329,7 +347,7 @@ the former revolves around security, while the latter enhances usability.
 
 **2. Protected Pages:**
 
-- These focus on user experience by ensuring users don't stumble upon confusing (WordPress) error pages.
+- Focus on user experience by ensuring users don't stumble upon confusing (WordPress) error pages.
 - Fortress redirects users to the "Confirm Access" page, where they can re-authenticate and renew their sudo mode.
 
 ### Visualizing the Difference
@@ -365,10 +383,10 @@ For this reason, Fortress includes a WP-CLI command that will toggle the sudo mo
 created session.
 
 ```shell
-wp snicco/fortress session toggle-sudo <user_id>
+wp fort session toggle-sudo user_id
 ```
 
-Refer to the [complete command reference here](../../wp-cli/readme.md#toggle-sudo).
+Refer to the [complete command reference here](../../cli/readme.md#session-toggle-sudo).
 
 ---
 

@@ -40,7 +40,7 @@ A cookie can be stolen in two ways:
 - via network communication (mostly irrelevant due to HTTPS).
 - via the user's computer.
 
-The main risk lies in a computer being infected by a cookie stealing malware.
+The main risk lies in a computer being infected by cookie stealing malware.
 
 | ![](../../_assets/images/session/sophos-x-ops-pass-the-cookie-attack.jpg)<br><br/>Image: [Sophos](https://news.sophos.com/en-us/2022/08/18/cookie-stealing-the-new-perimeter-bypass/) |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -49,7 +49,7 @@ Stolen cookies are then sold to hackers in huge batches on the dark web.
 
 > [Read more about this attack here](https://news.sophos.com/en-us/2022/08/18/cookie-stealing-the-new-perimeter-bypass/)
 
-WordPress sites are wide open to these attacks. <br><br>**Neither Core nor third-party security plugins have a solution or seem to be even aware of the subject matter.**
+WordPress sites are wide open to these attacks. <br><br>**Neither Core nor third-party security plugins have a solution or seem even aware of the subject matter.**
 
 ### Default WordPress session management
 
@@ -100,15 +100,15 @@ The absolute session timeout limits an attacker's window to exploit an already s
 Example:
 
 - A user logs in at 10:00, and the absolute timeout is `1 hour`.
-- A malware steals the cookie from the user's computer at `10:30`.
+- Malware steals the cookie from the user's computer at `10:30`.
 - The attacker starts using the stolen cookie at `10:45` => After 15 minutes (at 11:00), the attacker will be logged out again with no way back in until their malware starts sending a new cookie.
 
 
 ### Configuration
 
-- The [`absolute_timeout` option](../../configuration/02_configuration_reference.md#absolute_timeout) applies to all user by default.
+- The [`absolute_timeout` option](../../configuration/02_configuration_reference.md#absolute_timeout) applies to all users by default.
 - The [`absolute_timeout_per_cap` option](../../configuration/02_configuration_reference.md#absolute_timeout_per_cap) overwrites the default value if the user has one of the specified WordPress capabilities.
-- The [`absolute_timeout_remembered_user` option](../../configuration/02_configuration_reference.md#absolute_timeout_remembered_user) applies to all user that want to be remembered.
+- The [`absolute_timeout_remembered_user` option](../../configuration/02_configuration_reference.md#absolute_timeout_remembered_user) applies to all users that want to be remembered.
 - The [`absolute_timeout_remembered_user_per_cap` option](../../configuration/02_configuration_reference.md#absolute_timeout_remembered_user_per_cap) applies to all users that want to be remembered and have one of the specified capabilities.
 
 Finally, the following hook can be used to overwrite both options at runtime:
@@ -150,7 +150,7 @@ At a given rotation timeout of X, an attacker must use the stolen token within X
 Example: 
 
 - A user logs in at 10:00, and the rotation timeout is `5 minutes`.
-- A malware steals the cookie from the user's computer at `10:01`.
+- Malware steals the cookie from the user's computer at `10:01`.
 - The user keeps using the site and visits his profile page at `10:06`. => The user receives a new auth cookie, and the old one is invalidated server side.
 - The attacker tries to use the stolen cookie at `10:07,` but it has already been invalidated and does not work anymore.
 
@@ -160,7 +160,7 @@ This is why having an absolute and rotation timeout is essential.
 
 ### Configuration
 
-- The [`rotation_timeout` option](../../configuration/02_configuration_reference.md#rotation_timeout) applies to all user by default.
+- The [`rotation_timeout` option](../../configuration/02_configuration_reference.md#rotation_timeout) applies to all users by default.
 - The [`rotation_timeout_per_cap` option](../../configuration/02_configuration_reference.md#rotation_timeout_per_cap) overwrites the default value if the user has one of the specified WordPress capabilities.
 
 Finally, the following hook can be used to overwrite both options at runtime:
@@ -201,11 +201,11 @@ Fortress uses a default idle timeout of '30 minutes`.
 
 - Protects users that left their computer unattended or god-forbid used a public computer.
 
-The idle timeout is insufficient since an attacker using a stolen cookie within the idle timeout could keep generating activity indefinitely.
+The idle timeout is not enough since an attacker using a stolen cookie within the idle timeout could keep generating activity indefinitely.
 
 ### Configuration
 
-- The [`idle_timeout` option](../../configuration/02_configuration_reference.md#idle_timeout) applies to all user by default.
+- The [`idle_timeout` option](../../configuration/02_configuration_reference.md#idle_timeout) applies to all users by default.
 - The [`idle_timeout_per_cap` option](../../configuration/02_configuration_reference.md#idle_timeout_per_cap) overwrites the default value if the user has one of the specified WordPress capabilities.
 
 Finally, the following hook can be used to overwrite both options at runtime:
@@ -253,8 +253,8 @@ Example:
 
 ### Configuration
 
-- The [`sudo_timeout` option](../../configuration/02_configuration_reference.md#sudo_timeout) applies to all user by default.
-- The [`sudo_timeout_per_cap` option](../../configuration/02_configuration_reference.md#sudo_timeout_per_cap) overwrites the default value if the user has one of the specified WordPress capabilities.
+- The [`sudo_mode_timeout` option](../../configuration/02_configuration_reference.md#sudo_mode_timeout) applies to all users by default.
+- The [`sudo_mode_timeout_per_cap` option](../../configuration/02_configuration_reference.md#sudo_mode_timeout_per_cap) overwrites the default value if the user has one of the specified WordPress capabilities.
 
 Finally, the following hook can be used to overwrite both options at runtime:
 
@@ -278,7 +278,7 @@ There are two rules for configuring the timeouts:
 - `sudo timeout < idle timeout < absolute timeout`.
 - `rotation timeout < absolute timeout`.
 
-They are (currently) not enforced at the code level, but breaking them does not make much logical sense, i.e.:
+They are (currently) not enforced at the code level, but breaking them makes little logical sense, i.e.:
 
 A `rotation timeout > absolute` would mean that no session gets rotated.
 
@@ -288,15 +288,15 @@ A `rotation timeout > absolute` would mean that no session gets rotated.
 
 ### WordPress nonces and Single Page Application Plugins
 
-Many popular WordPress plugins are implement as Single Page Applications (SPA) that are rendered
+Many popular WordPress plugins are implemented as Single Page Applications (SPA) that are rendered
 once, and then use ajax for all consequent requests. 
 
 However, **some** of these SPA plugins don't fetch a new WordPress Nonce for a logged-in user if the
 current one is expired. This then leads to not being able to save the current state because of a nonce mismatch.
 
-By default, WordPress nonces are valid for 24 hours which means that issue should surface rarely. 
+By default, WordPress nonces are valid for 24 hours, which means that the issue rarely surfaces. 
 
-However, with Fortress enabled, the `rotation timeou`t will always limit the timeframe in which a nonce created with [`wp_create_nonce`](https://developer.wordpress.org/reference/functions/wp_create_nonce/) is valid.
+However, with Fortress enabled, the `rotation timeout` will always limit the timeframe in which a nonce created with [`wp_create_nonce`](https://developer.wordpress.org/reference/functions/wp_create_nonce/) is valid.
 
 This is because WordPress [uses the user's current session token as part of the nonce](https://github.com/WordPress/wordpress-develop/blob/6.1/src/wp-includes/pluggable.php#L2341).
 
@@ -307,7 +307,7 @@ for content editing and "real" administrative tasks.
 That way, you can keep the shorter rotation timeouts for privileged users while allowing users
 that solely edit content to use SPA plugins without any issues. 
 
-Alternatively, you can use the [`disable_rotation_for_ajax_like_requests_per_cap`](../../configuration/02_configuration_reference.md#disablerotationforajaxlikerequestspercap) to define
+Alternatively, you can use the [`disable_rotation_for_ajax_like_requests_per_cap`](../../configuration/02_configuration_reference.md#disable_rotation_for_ajax_like_requests_per_cap) to define
 user capabilities for which Fortress should not rotate the session token for ajax like requests.
 This allows you to use your SPA plugins without issues while still being able to benefit from 
 the security of a short rotation timeout.
@@ -331,7 +331,7 @@ Take the following example:
 
 This is an edge case that you should run into very infrequently. However, if it's an issue, you can [increase the rotation timeout](#configuration-1).
 
-Fortress can not solve this since there is no way for a server to update HTML that has already been sent (unless WebSockets are used).
+Fortress cannot solve this since there is no way for a server to update HTML that has already been sent (unless WebSockets are used).
 
 --- 
 

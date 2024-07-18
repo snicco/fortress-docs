@@ -1,3 +1,12 @@
+# [1.0.0-beta.40](https://github.com/snicco/enterprise/compare/1.0.0-beta.39...1.0.0-beta.40) (2024-07-18)
+
+
+### Features
+
+* remove fallback secret generation, secrets must always be defined ([0d74317](https://github.com/snicco/enterprise/commit/0d74317f02fb507cbdf193f5677919cc6d464cf6))
+* view cached config subsets without fortress prefix in --key ([5f326a7](https://github.com/snicco/enterprise/commit/5f326a7207be4389552da8f020895dde5a5e3115))
+* vnp - disable opportunistic encryption in cli requests ([b102396](https://github.com/snicco/enterprise/commit/b102396f307131f3337ecdcae8dccc286b0e66b6))
+
 # [1.0.0-beta.39](https://github.com/snicco/enterprise/compare/1.0.0-beta.38...1.0.0-beta.39) (2024-06-06)
 
 

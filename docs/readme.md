@@ -1,49 +1,27 @@
-# Fortress Documentation
+# Fortress developer documentation
 
 <!-- TOC -->
   * [Getting started](#getting-started)
-    * [Requirements](#requirements)
-    * [Quickstart](#quickstart)
-    * [Platform/Appliance integration](#platformappliance-integration)
+    * [Advanced setup](#advanced-setup)
   * [Configuration](#configuration)
   * [Modules](#modules)
-  * [WP-CLI](#wp-cli)
+  * [Fortress CLI](#fortress-cli)
   * [Debugging and more](#debugging-and-more)
 <!-- TOC -->
 
+---
+
 ## Getting started
 
-### Requirements
+1. [Requirements](getting-started/01_requirements.md)
+2. [Installation](getting-started/02_installation.md)
+3. [Updates](getting-started/03_updates.md)
 
-Snicco Fortress has the following system requirements:
+### Advanced setup
 
-- PHP: `7.4 | 8.0 | 8.1`.
-- WordPress: `6.0 or higher`.
-- mysqli compiled with the default MySQL Native Driver (`mysqlnd`) for PHP, **not** the legacy `libmysqlclient`.
-- `InnoDB` storage engine, enforced on the wp_users table - Highly recommended on all tables although not used by Fortress.
-- Non-default PHP extensions: `mbstring`
-
-### Quickstart
-
-If you are only looking to test Fortress without going into all the details
-of the optimal setup, take the following steps:
-
-1. [Download the desired version of Fortress using the GitHub UI](getting-started/01_download.md#web-ui).
-2. Install the plugin through the WordPress admin UI like any other plugin.
-3. Fortress should redirect you to the 2FA setup page after activation.
-
-> ⚠️⚠️⚠️ THIS IS FOR DEMO PURPOSES ONLY. IN PRODUCTION, FORTRESS MUST RUN AS A MUST USE PLUGIN.
-
-### Platform/Appliance integration
-
-If you want to integrate Fortress into your hosting platform or similar, go through the in-depth setup documentation.
-
-1. [Download](getting-started/01_download.md)
-2. [Preparation](getting-started/02_preparation.md)
-3. [White-Label](getting-started/03_white_label.md)
-4. [Activation](getting-started/04_activation.md)
-5. [Appliance Distribution](getting-started/05_appliance_distribution.md)
-
+1. [Fortress and staging sites](getting-started/advanced-setup/staging-sites.md)
+2. [Secret management](getting-started/advanced-setup/secret-managment.md)
+3. [Custom directory structures](getting-started/advanced-setup/custom-directory-structures.md)
 
 ## Configuration
 
@@ -52,8 +30,8 @@ If you want to integrate Fortress into your hosting platform or similar, go thro
 
 ## Modules
 
-Snicco Fortress consists of six independent modules that you can use independently of each other.
-All five modules are activated by default.
+Fortress consists of six independent modules that you can use independently of each other; all six modules
+are enabled by default.
 
 1. [Password Security](modules/password/readme.md)
 2. [Rate limiting](modules/ratelimit/readme.md)
@@ -62,13 +40,11 @@ All five modules are activated by default.
 5. [Vaults & Pillars](modules/vaults_and_pillars/readme.md)
 6. [Code Freeze](modules/code_freeze/readme.md)
 
-## WP-CLI
+## Fortress CLI
 
-Fortress is built with a CLI-first approach, allowing maximum automation in [appliance distribution](getting-started/05_appliance_distribution.md). It has full feature parity between the Web UI and the WP-CLI.
+Fortress is built with a CLI-first approach to allow maximum automation. 
 
-To improve the lackluster developer experience and reliability of the (default) WP-CLI significantly, we created our open-source [BetterWPClI](https://github.com/snicco/better-wp-cli) library and used it everywhere in Fortress.
-
-Refer to the [complete WP-CLI reference](wp-cli/readme.md) for more information.
+Refer to the [complete Fortress CLI reference](cli/readme.md) for more all available commands.
 
 ## Debugging and more
 

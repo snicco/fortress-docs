@@ -21,7 +21,7 @@ will not be able to:
 - request a password reset link.
 - reset passwords on the profile page.
 
-**This only applies to web-based password resets!** Passwords can always be reset [using WP-CLI](../../wp-cli/readme.md#password-reset).
+**This only applies to web-based password resets!** Passwords can always be reset [using WP-CLI](../../cli/readme.md#password-reset).
 
 By default, this applies to users of the roles:
 
@@ -44,12 +44,12 @@ This works out of the gate for most plugins that allow password resets in the fr
 
 
 | <br>WordPress password reset<br><br>![](../../_assets/images/no-pw-reset-link.png) | <br>WooCommerce password reset<br><br>![](../../_assets/images/woocommerce-no-pw-reset.png) |
-|------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+|------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 
 
-## Resetting a password for a different priviledged user
+## Resetting a password for a different privileged user
 
-First of all, passwords can always be reset [using WP-CLI](../../wp-cli/readme.md#password-reset) for all users.
+First, passwords can always be reset [using WP-CLI](../../cli/readme.md#password-reset) for all users.
 
 However, if you are not resetting the password for your own user account, maybe because
 the user has no WP-CLI access, we recommend the following:
@@ -68,7 +68,7 @@ One example is the WooCommerce "My Account" page for a logged-in user.
 
 In this case, WooCommerce [directly changes the WP_User object and sets a new password](https://github.com/wp-plugins/woocommerce/blob/master/includes/class-wc-form-handler.php#L231).
 
-Fortress can not prevent this since WooCommerce (wrongfully) does not fire the [`allow_password_reset`](https://developer.wordpress.org/reference/hooks/allow_password_reset/) hook to check if password resets are allowed for the logged-in user.
+Fortress cannot prevent this since WooCommerce (wrongfully) does not fire the [`allow_password_reset`](https://developer.wordpress.org/reference/hooks/allow_password_reset/) hook to check if password resets are allowed for the logged-in user.
 
 In this case, you either have to notify the plugin's vendor and ask them to add the hook, or you have to inspect
 their code and fire it yourself at the appropriate time.

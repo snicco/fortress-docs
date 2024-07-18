@@ -19,7 +19,7 @@ Fortress enforces a NO-BS password policy for **all** user accounts, which means
 
 - Between 12 and 4096 characters.
 - No character restrictions and full Unicode support. <br> `🧐🧐漢字👀docker-horse-chair` is a perfectly valid password.
-- Password strength must score at least a 3 out of 4 [(See below)](#password-strength-estimator).
+- Password strength must score at least a three out of four [(See below)](#password-strength-estimator).
 
 ## Password strength estimator
 
@@ -48,7 +48,7 @@ WordPress fires this hook once a user edits his profile on the `/wp-admin/profil
 ### Front end
 
 Fortress will evaluate the password policy each time the [`validate_password_reset`](https://developer.wordpress.org/reference/hooks/validate_password_reset/) hook is fired.
-<br>WordPress core fires this hook when a user resets his password on the `wp-login.php` page.
+<br>WordPress core fires this hook when a user resets their password on the `wp-login.php` page.
 
 When the [`validate_password_reset`](https://developer.wordpress.org/reference/hooks/validate_password_reset/) is fired, Fortress tries to find the user-submitted password in one of the following POST parameters:
 
@@ -124,7 +124,8 @@ their code and fire it yourself at the appropriate time.
 
 One example is the WooCommerce "My Account" page for logged-in users.
 
-A user can change his account details all at once, including his password, and the `validate_password_reset` hook is not fired.
+A user can change their account details all at once, including their password,
+yet the `validate_password_reset` hook is not fired.
 
 We can quickly fix this behavior by adding the following callback to the `woocommerce_save_account_details_errors` action.
 

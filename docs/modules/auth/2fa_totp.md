@@ -163,17 +163,17 @@ add_action(RedirectingUserWith2FAEnabled::class, function (RedirectingUserWith2F
 
 If a site only has one (or a handful)
 of [`privileged_users`](../../configuration/02_configuration_reference.md#privileged_user_roles) AND new privileged
-users are added infrequently, it makes sense to enforce that each user needs to have TOTP-2FA configured BEFORE he can
+users are added infrequently, it makes sense to enforce that each user needs to have TOTP-2FA configured BEFORE they can
 log in.
 
-Doing this protects against the following attack vectors:
+This protects against the following attack vectors:
 
 - An attack with WRITE access to the database can't delete TOTP credentials to bypass 2FA.
 - An attacker with WRITE access to the database can't insert new admin users since they can't create TOTP credentials
-  without the [secret key stored in the filesystem](../../getting-started/02_preparation.md#secrets).
-- An attacker with a [stolen auth cookie](../session/session-managment-and-security.md#threat-model) can not create
+  without the [secret key stored in the filesystem](../../getting-started/advanced-setup/secret-managment.md).
+- An attacker with a [stolen auth cookie](../session/session-managment-and-security.md#threat-model) cannot create
   sleeper admin users.
-- A **non-targeted malware** can not insert new admin users using `wp_insert_user`. <br>(If an attacker specifically
+- **Non-targeted malware** cannot insert new admin users using `wp_insert_user`. <br>(If an attacker specifically
   targets your site AND your site has a vulnerability that gives full OS access, it's game over no matter what).
 
 To achieve this, add your
@@ -199,8 +199,9 @@ Unfortunately, WordFence made this mistake; hence, its 2FA only works on the def
 
 ### The user can log in without 2FA !?
 
-Your site uses a plugin that, with almost 100% certainty, bypasses the default WordPress authentication mechanism (
-adding custom hooks to  [`authenticate`](https://developer.wordpress.org/reference/hooks/authenticate/)) and directly
+Your site uses a plugin that, with almost 100% certainty,<br>
+bypasses the default WordPress authentication mechanism
+(adding custom hooks to  [`authenticate`](https://developer.wordpress.org/reference/hooks/authenticate/)) and directly
 calls [`wp_set_auth_cookie`](https://developer.wordpress.org/reference/functions/wp_set_auth_cookie/).
 
 The following example showcases the issue:
@@ -283,7 +284,7 @@ If the threshold is exceeded, Fortress will "lock" the user account which means:
 - Sending the user an email about the incident.
 
 For privileged users, the failed attempts can only be reset by using
-the: `wp snicco/fortress auth totp:reset-failed-attempts` [command](../../wp-cli/readme.md#totpreset-failed-attempts).
+the: `wp fort 2fa reset-failed-attempts` [command](../../cli/readme.md#2fa-reset-attempts).
 
 ### Replay / Reuse protection
 
@@ -308,7 +309,7 @@ Fortress generates the plaintext secret using 256 bits of entropy
 and stores it in the database
 using [libsodiums symmetric encryption](https://www.php.net/manual/de/function.sodium-crypto-stream-xor.php). The
 encryption key is never stored in the database and must be provided using one
-of [Fortress's secret storages.](../../getting-started/02_preparation.md#secrets).
+of [Fortress's secret storages](../../getting-started/advanced-setup/secret-managment.md).
 
 ### Recovery codes
 
@@ -347,7 +348,7 @@ TOTP-2FA until the user provides a valid OTP.
 
 ### Delayed completion screen
 
-If for some reason, the user does not complete the setup immediately, they can resume it later.
+If, for some reason, the user does not complete the setup immediately, they can resume it later.
 Fortress will automatically intercept all requests and redirect the user to the appropriate page.
 
 Fortress will not reveal the current TOTP secret again. However, if the user has not saved it, they can resume the setup
@@ -402,7 +403,7 @@ Fortress will invalidate all existing recovery codes for the user and [display t
 
 #### Deactivating TOTP
 
-A user can deactivate TOTP for his account unless the user's role is specified in
+A user can deactivate TOTP for their account unless the user's role is specified in
 the [`require_2fa_for_roles_before_login`](../../configuration/02_configuration_reference.md#require_2fa_for_roles_before_login)
 option.
 
@@ -425,14 +426,14 @@ A user that does not have TOTP enabled yet can [initiate the TOTP setup flow](#c
 
 Since Fortress has 100% feature parity between UI and CLI, the same steps from
 the [UI walkthrough](#ui-setup-walkthrough) can also be performed
-using [Fortress's WP-CLI commands](../../wp-cli/readme.md).
+using [Fortress's WP-CLI commands](../../cli/readme.md).
 
 ### Setup command
 
-- [Full command reference](../../wp-cli/readme.md#totpsetup).
+- [Full command reference](../../cli/readme.md#2fa-setup).
 
 ```console
-$ wp snicco/fortress auth totp:setup admin@snicco.io
+$ wp fort 2fa setup admin@snicco.io
                                                                                                                       
 Secret: 7UQUJXREMBUWZOLEVG6LKI7G53Z4LNCS
 ```
@@ -442,12 +443,12 @@ valid OTPs.
 
 ### Complete command
 
-- [Full command reference](../../wp-cli/readme.md#totpcomplete).
+- [Full command reference](../../cli/readme.md#2fa-complete).
 
 A valid OTP needs to be provided the complete the setup.
 
 ```console
-$ wp snicco/fortress auth totp:complete admin@snicco.io 755412
+$ wp fort 2fa complete admin@snicco.io 755412
                                                                                                                       
 Recovery codes:
 058788-3f57cd-e1c68d-775549-a7990f-c30c6f-d77a61-b63623
@@ -462,18 +463,18 @@ f495ae-3e0bc7-04bca3-ecc97d-0cc750-e5a235-864e30-e232b3
 
 ### Deactivate command
 
-- [Full command reference](../../wp-cli/readme.md#totpdeactivate).
+- [Full command reference](../../cli/readme.md#2fa-delete).
 
 ```console
-$ wp snicco/fortress auth totp:deactivate admin@snicco.io
+$ wp fort 2fa delete admin@snicco.io
 ```
 
 ### Reset recovery codes command
 
-- [Full command reference](../../wp-cli/readme.md#totpreset-recovery-codes).
+- [Full command reference](../../cli/readme.md#2fa-reset-recovery-codes).
 
 ```console
-$ wp snicco/fortress auth totp:reset-recovery-codes admin@snicco.io
+$ wp 2fa auth reset-recovery-codes admin@snicco.io
 
 f25887-5c3ac1-3cb84b-195b63-3ce680-538d06-711c18-052cbf
 479cbf-2b317f-3da52b-4ff0dc-73cb62-bc97c8-44279d-0bb51b

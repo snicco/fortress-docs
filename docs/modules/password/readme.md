@@ -29,11 +29,18 @@
 
 ### Disable application passwords
 
-By default, Fortress completely disables WordPress application passwords, as most sites do not use them.
+Fortress can completely disable WordPress application passwords, as most sites do not use them.
 
-They are vulnerable to social engineering attacks, where an attacker can tricker an unsuspected site admin into adding a new application password by clicking on a link.
+They are vulnerable to social engineering attacks.
+An attacker can trick an unsuspected site admin into adding a new application password by clicking on a link.
 
-You can re-enable application passwords by setting the [`disable_application_passwords`](../../configuration/02_configuration_reference.md#disable_application_passwords) option to `false`.
+You can disable application passwords 
+by setting the [`disable_application_passwords`](../../configuration/02_configuration_reference.md#disable_application_passwords) option to `true`.
+
+Alternatively, 
+running the [`wp fort config optimize`](../../configuration/01_how_to_configure_fortress.md#automatically-optimize-the-configuration)
+will disable application passwords automatically if no user on the site has an application password
+in use.
 
 ### Decrease password reset link duration
 
@@ -53,7 +60,8 @@ add_filter('password_reset_expiration', fn (): int => 60 * 60, 11);
 WordPress invalidates a user's sessions after a password change by coincidence because a user's password hash happens to be part of his authentication cookie.
 To be precise, [the 8th - 12th characters of the password hash are part of a user's auth cookie](https://github.com/WordPress/wordpress-develop/blob/6.1/src/wp-includes/pluggable.php#L862).
 
-However, the 8th - 12th hash characters being different is not guaranteed, especially not with password hashing algorithms that store settings as the prefix of a resulting password hash.
+However, the 8th–12th hash characters are not guaranteed to be different,
+especially not with password hashing algorithms that store settings as the prefix of a resulting password hash.
 
 For that reason, Fortress explicitly destroys a user's sessions after he changes his password.
 

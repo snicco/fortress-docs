@@ -10,9 +10,9 @@
 
 ## Disclaimer
 
-Rate limiting in Fortress hardens the security of a website. However, nothing in the rate-limiting module of Fortress is meant to be used for DOS protection, like flooding a server with a massive amount of requests.
+Rate limiting in Fortress hardens the security of a website. However, nothing in the rate-limiting module of Fortress is meant to be used for DOS protection, like flooding a server with a massive number of requests.
 
-This is impossible to tackle effectively at the application layer and should be handled at the server or CDN level.
+This is impossible to tackle effectively in the application layer and should be handled at the server or CDN level.
 
 ## Implementation details
 

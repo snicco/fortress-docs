@@ -48,7 +48,7 @@ The standard user behavior typically proceeds as follows:
 
 In this context, Magic Login Links can simplify the user authentication process, thus enhancing User Experience (UX):
 
-- Users can purchase tickets utilizing their email address, negating the need for a password.
+- Users can purchase tickets using their email address, negating the need for a password.
 - Users input their email address to facilitate login.
 - An auto-login link is sent to the user's account, which, upon selection, automatically logs the user in.
 
@@ -159,8 +159,8 @@ into your platform.
 Being able to run Fortress CLI commands means having SSH access on the target server.
 For that reason, **Fortress allows generating Magic Login Links for privileged users via WP-CLI**.
 
-Furthermore, the [`wp snicco/fortress auth magic-link create` command](../../wp-cli/readme.md#magic-linkcreate) allows you to create three different types of Magic
-Login Links, each with different "authentication permissions."
+The [`wp 2fa magic-link create` command](../../cli/readme.md#magic-link-create) allows you
+to create three different types of Magic Login Links, each with different "authentication permissions."
 
 ### Primary Login Links
 
@@ -170,7 +170,7 @@ exactly like Magic Links that were requested via HTTP.
 The only difference is that you can also generate them for privileged users.
 
 ```console
-$ wp snicco/fortress auth magic-link:create admin
+$ wp fort 2fa magic-link create admin
                                                                                                                       
 https://snicco-enterprise.test/snicco-fortress/auth/magic-link/challenge/HcD69EMqAq377OCT-yuPloY-sWBO9wm4nXEfayTRTpF9MaNlW-uc0ys9E2X_LsQlwbnWrFYYFern?action=magic-login-primary
 ```
@@ -181,7 +181,7 @@ By adding the `--bypass-2fa` flag to the command, Fortress will generate a Magic
 allows bypassing Fortress's own 2FA functionality in case 2FA being configured for the user.
 
 ```console
-$ wp snicco/fortress auth magic-link:create admin --bypass-2fa
+$ wp fort magic-link create admin --bypass-2fa
                                                                                                                       
 https://snicco-enterprise.test/snicco-fortress/auth/magic-link/challenge/w90qe7akw947Av4IJraC-KhcNjh5kZIvLHKRNZDFVIPG9elZo7eYvUYgpWkzyGPV2UXI7xB4aAUR?action=magic-login-primary-2fa
 ```
@@ -190,18 +190,17 @@ https://snicco-enterprise.test/snicco-fortress/auth/magic-link/challenge/w90qe7a
 
 By adding the `--sso` flag to the command, Fortress will generate a Magic Login Link that
 completely bypasses all authentication checks on the site including Fortress's 2FA **AND** other mechanisms that might be
-employed by other plugins
-on your site.
+employed by plugins on your site.
 
 ```console
-$ wp snicco/fortress auth magic-link:create admin --sso
+$ wp fort magic-link create admin --sso
                                                                                                                       
 https://snicco-enterprise.test/snicco-fortress/auth/magic-link/challenge/KA740Rujq1YlEgGHmAtptGljKV21iOyPOx2G10dRXsC71QkcCai3i9twMizDPZXEajknqwSlUJ7n?action=magic-login-sso
 ```
 
 #### What is the difference between 2FA Bypass and SSO?
 
-To better understand the difference, it's required to explain how a user is logged-in via a Magic Login Link.
+To better understand the difference, it's required to explain how a user is logged in via a Magic Login Link.
 
 After Fortress successfully validated the Magic Login Link,
 the [`authenticate` hook](https://developer.wordpress.org/reference/hooks/authenticate/) will be called
@@ -211,8 +210,8 @@ to let Core and other plugins interact with the login attempt.
 apply_filters_ref_array('authenticate', [$user, $user->user_login, '']);
 ```
 
-For example, WordPress Core contains the following hook callback to check if the user that is
-trying to log in is a spammer:
+For example, WordPress Core contains the following hook callback to check if the user 
+is trying to log in is a spammer:
 
 ```php
 function wp_authenticate_spam_check( $user ) {
@@ -250,7 +249,7 @@ straight away.
 
 Unless you have a good reason to use `--sso`, stick to `--bypass-2fa`.
 
-A good reason might be any plugin on your site that employs authentication checks
+A good reason might be any plugin on your site that uses authentication checks
 that are fundamentally not compatible with the concept of Magic Login Links.
 
 ### Sending Magic Login Links via email
@@ -262,7 +261,7 @@ It is also NOT possible to send Magic Links via email for privileged users.
 Fortress will fail the command in both cases.
 
 ```console
-$ wp snicco/fortress auth magic-link:create subscriber --email
+$ wp fort magic-link create subscriber --email
 
                                                                                                                       
  [OK] The magic link was sent to 'subscriber@snicco.io'.                                                                     
@@ -290,17 +289,17 @@ The URL for a Magic Login Link is created by generating `57 random bytes` using 
 
 The 57 random bytes are split into two parts:
 
-- 24 bytes that act as a `selector`.
-- 33 bytes that act as a `verifier`.
+- Twenty-four bytes that act as a `selector`.
+- Thirty-three bytes that act as a `verifier`.
 
 Then, we combine all the "inputs" of a magic link:
 
 `messagge = user_id | expiration timestamp | purpose | verifier`
 
-> `purpose` is the type of Magic Link (i.e. primary | bypass-2fa | sso )
+> `purpose` is the type of Magic Link (i.e., primary | bypass-2fa | sso)
 
 and hash the combined `message` using Libsodium's [`sodium_crypto_generichash`](https://www.php.net/manual/en/function.sodium-crypto-generichash.php)
-using one of [Fortress's secure secrets](../../getting-started/02_preparation.md#secrets). 
+using one of [Fortress's secure secrets](../../getting-started/advanced-setup/secret-managment.md). 
 
 We then store the resulting `hash`, `expiration_timestamp` , `user_id` and `purpose` in the database, with the `selector` being the primary key used for lookup.
 
@@ -315,7 +314,7 @@ Libsodium's side-channel-attack resistant
 1. Get the Magic Login Link from the URL.
 2. Split the Magic Login Link into `selector` and `verifier`.
 3. Try to find a row with the primary key being the `selector`, if no row is found abort.<br>
-    **Note**: It's crucial to that the `verifier` is never used for MySQL lookups in order to not be vulnerable to [time-based side channel attacks](https://blog.ircmaxell.com/2014/11/its-all-about-time.html#Branching-Based-Timing-Attacks). That's the entire purpose of splitting the URL into two parts in the first place.
+    **Note**: It's crucial to that the `verifier` is never used for MySQL lookups to not be vulnerable to [time-based side channel attacks](https://blog.ircmaxell.com/2014/11/its-all-about-time.html#Branching-Based-Timing-Attacks). That's the entire purpose of splitting the URL into two parts in the first place.
 4. Re-calculate `hash_from_url = sodium_crypto_generic_hash( user_id_from_db | expiration_timestamp_from_db | purpose_from_url | verifier_from_url)`
 5. Compare `hash_from_url` to `hash_stored_in_db` in a [timing-attack-safe manner](https://blog.ircmaxell.com/2014/11/its-all-about-time.html#Branching-Based-Timing-Attacks) using [`hash_equals`](https://www.php.net/manual/en/function.hash-equals.php).
 6. Delete the Magic Link from the database.
@@ -338,7 +337,7 @@ It's impossible to:
 - a) Alter any existing magic links (swapping user ids, etc.).
 - b) Insert new magic links directly into the database.
 
-because nobody can generate a valid keyed-hash since the[ Fortress secret key is stored securely OUTSIDE the database](../../getting-started/02_preparation.md#secrets).
+because nobody can generate a valid keyed-hash since the[ Fortress secret key is stored securely OUTSIDE the database](../../getting-started/advanced-setup/secret-managment.md).
 
 #### Brute-Force
 

@@ -59,7 +59,7 @@ WordPress and its ecosystem have expanded to handle increasingly complex applica
 integrations per site. Yet the security model has unfortunately remained stagnant. This has left a considerable gap in
 WordPress security, especially when it comes to securing sensitive data.
 
-Storing sensitive data in plaintext within the WordPress database is a substantial security risk. This practice, common
+Storing sensitive data in plaintext within the WordPress database is a significant security risk. This practice, common
 in many WordPress Core and third-party plugins/themes, opens up the potential for severe security breaches:
 
 - **A stolen Stripe API key** could lead
@@ -92,7 +92,7 @@ A Fortress `Vault` secures a WordPress option (or a subset of it) by storing it 
 Vaults are a vital part of Fortress's `Vaults & Pillars` (VnP) module. They represent a specific way of storing and
 managing your WordPress options that need to be kept secret.
 
-One of [Fortress's `Secure Secrets`](../../getting-started/02_preparation.md#secrets) is used as the encryption key,
+One of [Fortress's `Secure Secrets`](../../getting-started/advanced-setup/secret-managment.md) is used as the encryption key,
 meaning that decryption of the database value is impossible unless the entire server (filesystem) is compromised.
 
 Although the option is stored encrypted, WordPress always receives the "real" value from Fortress.
@@ -332,7 +332,7 @@ configuration, thereby providing an added layer of security and stability for yo
 **1. Highly Security-Critical Configuration Flags**
 
 These are settings that have a significant impact on the security of your application.
-They are typically boolean(on/off) settings that determine the application's behavior.
+They are typically boolean (on/off) settings that determine the application's behavior.
 
 Traditionally, in more security-mature ecosystems, changes to these settings would
 require a new version of the application to be deployed.
@@ -405,7 +405,7 @@ $default_role = get_option('default_role');
 
 Just as there a [`Partial Vaults`](#partial-vaults), there are also `Partial Pillars`.
 
-A `Partial Pillar` targets a specific subset within a multi-dimensional array that's serialized and stored in the
+A `Partial Pillar` targets a specific subset within a multidimensional array that's serialized and stored in the
 database.
 
 The `Partial Pillar` is immutable, while the rest of the option can still be updated.
@@ -538,9 +538,8 @@ tries to fetch/use the `woocommerce_stripe_settings` option.
 If the `ACME_STRIPE_API_KEY` environment does not exist, the `ENV Pillar` will be ignored (unless
 the [Strict Mode](#strict-mode-in-vaults-and-pillars) is enabled).
 
-Again, `woocommerce_stripe_settings.secret_key` could also have been a [Vault](#vaults) but it might be more beneficial
-to use
-an `ENV Pillar` in the following scenarios:
+Again, `woocommerce_stripe_settings.secret_key` could also have been a [Vault](#vaults),
+but it might be more beneficial to use an `ENV Pillar` in the following scenarios:
 
 - You have complete control over the WordPress application and its runtime.
 - Your application is already using ENV secrets for other parts of your custom code, and you also want WordPress Core<br>
@@ -639,7 +638,7 @@ like `subscriber`.
 The name of this option follows the scheme `WORDPRESS_DATABASE_PREFIXuser_roles`, i.e., `wp_user_roles` for the
 database prefix `wp_`.
 
-You can configure role permissions to your liking and obtain the final value through WP-CLI:
+You can configure role permissions to your liking and get the final value through WP-CLI:
 
 ```console
 $ wp option get wp_user_roles --format=json | jq
@@ -793,7 +792,7 @@ This `active_plugins` setting controls the active plugins on your WordPress site
 on your
 site to prevent unauthorized activation or deactivation of plugins in your production environment.
 
-You can obtain the value for the `Covering Pillar` using WP-CLI:
+You can get the value for the `Covering Pillar` using WP-CLI:
 
 ```console
 $ wp option get active_plugins --format=json | jq
@@ -819,14 +818,14 @@ Follow these steps when adding a new `Vault` or `Pillar`:
 1. Ensure the [`Strict Mode` is deactivated](#checking-if-strict-mode-is-activated).
 2. Add your new [`Vaults`](#vaults) and [`Pillars`](#pillars) to
    your [configuration](../../configuration/01_how_to_configure_fortress.md) as [described](#setting-up-vaults) [above](#setting-up-pillars).
-3. [Test and reload](../../configuration/01_how_to_configure_fortress.md#testing-your-configuration-sources) your
+3. [Test and reload](../../configuration/01_how_to_configure_fortress.md#testing-and-reloading-the-configuration) your
    configuration by running:
     ```shell
-    wp snicco/fortress shared config:test --reload-on-success
+    wp fort config test --reload-on-success
     ```
-4. To encrypt all `Vaults` and replace `Pillars` with placeholders in the database, run the [following command](../../wp-cli/readme.md#optionsseal-all):
+4. To encrypt all `Vaults` and replace `Pillars` with placeholders in the database, run the [following command](../../cli/readme.md#vnp-option-seal-all):
     ```shell
-    wp snicco/fortress vnp options:seal-all
+    wp fort vnp option seal-all
     ```
 5. Optionally: [Re-enable the `Strict Mode`](#strict-mode-in-vaults-and-pillars).
 6. Find your preferred [staging to production workflow](#staging-to-production-workflows).
@@ -840,25 +839,23 @@ Follow these steps when removing one or more **Vaults** and/or **Pillars**:
    ```shell
    wp maintenance-mode activate
     ```
-3. To decrypt all `Vaults` in the database and replace `Pillar` placeholders with real values, run the [following command](../../wp-cli/readme.md#optionsunseal-all):
+3. To decrypt all `Vaults` in the database and replace `Pillar` placeholders with real values, run the [following command](../../cli/readme.md#vnp-option-unseal-all):
     ```shell
-    wp snicco/fortress vnp options:unseal-all --skip-plugins --skip-themes --skip-packages
+    wp fort vnp option unseal-all
     ```
-   The `--skip-plugins --skip-themes --skip-packages` is added to prevent opportunistic re-encryption if a plugin fetches a Vault/Pillar during the command.
    
 4. Remove the [`Vaults`](#setting-up-vaults) and [`Pillars`](#setting-up-pillars) from
    your [configuration](../../configuration/01_how_to_configure_fortress.md) file.
-5. [Test and reload](../../configuration/01_how_to_configure_fortress.md#testing-your-configuration-sources) your
+5. [Test and reload](../../configuration/01_how_to_configure_fortress.md#testing-and-reloading-the-configuration) your
    configuration by running:
     ```shell
-    wp snicco/fortress shared config:test --reload-on-success --skip-plugins --skip-themes --skip-packages
+    wp fort config test --reload-on-success
     ```
-   The `--skip-plugins --skip-themes --skip-packages` is added to prevent opportunistic re-encryption if a plugin fetches a Vault/Pillar during the command.
    
 6. Optionally: If you only removed **some**, you need to encrypt the remaining `Vaults` / `Pillars` in the database and
-   replace them with placeholders again with the [following command](../../wp-cli/readme.md#optionsseal-all)
+   replace them with placeholders again with the [following command](../../cli/readme.md#vnp-option-unseal-all)
     ```shell
-    wp snicco/fortress vnp options:seal-all
+    wp fort vnp option unseal-all
     ```
 7. Deactivate the WordPress Maintenance Mode:
    ```shell
@@ -876,20 +873,17 @@ If you wish to remove all `Vaults` and `Pillars` or turn off the module altogeth
    ```shell
    wp maintenance-mode activate
     ```
-3. To decrypt all `Vaults` in the database and replace `Pillar` placeholders with the real values, run the [following command](../../wp-cli/readme.md#optionsunseal-all)
+3. To decrypt all `Vaults` in the database and replace `Pillar` placeholders with the real values, run the [following command](../../cli/readme.md#vnp-option-unseal-all)
     ```shell
-    wp snicco/fortress vnp options:unseal-all --skip-plugins --skip-themes --skip-packages
+    wp fort vnp option unseal-all
     ```
-   The `--skip-plugins --skip-themes --skip-packages` is added to prevent opportunistic re-encryption if a plugin fetches a Vault/Pillar during the command.
-   
 4. Remove all [`Vaults`](#setting-up-vaults) and [`Pillars`](#setting-up-pillars) from
    your [configuration](../../configuration/01_how_to_configure_fortress.md) file.
-5. [Test and reload](../../configuration/01_how_to_configure_fortress.md#testing-your-configuration-sources) your
+5. [Test and reload](../../configuration/01_how_to_configure_fortress.md#testing-and-reloading-the-configuration) your
    configuration by running:
     ```shell
-    wp snicco/fortress shared config:test --reload-on-success --skip-plugins --skip-themes --skip-packages
+    wp fort config test --reload-on-success
     ```
-   The `--skip-plugins --skip-themes --skip-packages` is added to prevent opportunistic re-encryption if a plugin fetches a Vault/Pillar during the command.
 6. Deactivate the WordPress Maintenance Mode:
    ```shell
    wp maintenance-mode deactivate
@@ -910,11 +904,12 @@ Below are several scenarios to accommodate different staging and production work
 This is the most straightforward method. After modifying your `Vaults & Pillars` config following
 the [documented workflows](#workflows), push your staging files, and complete the database to production.
 
-Once done, on the production site, run the [following command](../../wp-cli/readme.md#optionspurge-cache) to purge any potentially lingering sensitive values from
-the WordPress Object Cache:
+Once done, on the production site,
+run the [following command](../../cli/readme.md#vnp-option-purge-cache)
+to purge any potentially lingering sensitive values from the WordPress Object Cache:
 
 ```shell
-wp snicco/fortress vnp options:purge-cache
+wp fort vnp option purge-cache
 ```
 
 This command purges only the persistent Object Cache for options that contain at least one `Vault` or `Pillar`.
@@ -925,29 +920,30 @@ If your site is highly dynamic and pushing the entire database from staging to p
 of the `wp_options` table and staging files is recommended. This should be done after performing one of the [documented
 workflows](#workflows) on your staging site.
 
-On the production site, run the [following command](../../wp-cli/readme.md#optionspurge-cache) to purge any potentially lingering sensitive values from the WordPress
-Object Cache:
+On the production site, run the [following command](../../cli/readme.md#vnp-option-purge-cache)
+to purge any potentially lingering sensitive values from the WordPress Object Cache:
 
 ```shell
-wp snicco/fortress vnp options:purge-cache
+wp fort vnp option purge-cache
 ```
 
 This command purges only the persistent Object Cache for options that contain at least one `Vault` or `Pillar`.
 
 #### Partial Database + Partial Files Push
 
-In cases where pushing the entire staging files to production is not feasible (for example, if your `wp-uploads` directory
+In cases where pushing the entire staging files to production is not possible
+(for example, if your `wp-uploads` directory
 is changing frequently), you can push the `wp_options` table along with your
 new [Fortress configuration file(s)](../../configuration/01_how_to_configure_fortress.md).
 
 This should be done after performing one of the [documented
 workflows](#workflows) on your staging site.
 
-On the production site, run the [following command](../../wp-cli/readme.md#optionspurge-cache) to purge any potentially lingering sensitive values from the WordPress
-Object Cache:
+On the production site, run the [following command](../../cli/readme.md#vnp-option-purge-cache)
+to purge any potentially lingering sensitive values from the WordPress Object Cache:
 
 ```shell
-wp snicco/fortress vnp options:purge-cache
+wp fort vnp option purge-cache
 ```
 
 This command purges only the persistent Object Cache for options that contain at least one `Vault` or `Pillar`.
@@ -962,12 +958,12 @@ If none of the above methods are suitable, the recommended workflow is as follow
    wp maintenance-mode activate
     ```
 2. Import or edit your changes into the production `wp_options` table.
-3. Copy your new new [Fortress configuration file(s)](../../configuration/01_how_to_configure_fortress.md) to the
+3. Copy your new [Fortress configuration file(s)](../../configuration/01_how_to_configure_fortress.md) to the
    production site.
 4. Follow the [documented workflows](#workflows) for adding/removing vaults/pillars **on the production site**.
-5. Clear the WordPress Object Cache for all options with a `Vault` or `Pillar` with the [following command](../../wp-cli/readme.md#optionspurge-cache)
+5. Clear the WordPress Object Cache for all options with a `Vault` or `Pillar` with the [following command](../../cli/readme.md#vnp-option-purge-cache)
     ```shell
-     wp snicco/fortress vnp options:purge-cache
+     wp fort vnp option purge-cache
     ```
 6. Disable the WordPress Maintenance Mode:
     ```shell
@@ -1017,7 +1013,7 @@ proper functioning of these constructs, there are a few rules that are automatic
   ```
 
 - **Nested Conflicts:** For `Partial Vaults/Pillars`, conflicts can arise if you try to define a **Vault/Pillar** for a subset
-  of an option while already having a **Vault/Pillar** for a super-set of that option.
+  of an option while already having a **Vault/Pillar** for a superset of that option.
   <br>Example:
     ```json
     {
@@ -1043,7 +1039,7 @@ rules.
 **Vaults & Pillars** acts as a translation layer between the WordPress database and the WordPress Core or plugin
 code that leverages the [WordPress Options API](https://developer.wordpress.org/plugins/settings/options-api/).
 
-**Vaults & Pillars** is specifically designed to work with options utilized
+**Vaults & Pillars** is specifically designed to work with options used
 by code over which you have no direct control.
 
 The translation layer ensures that everything continues to function seamlessly.
@@ -1260,15 +1256,15 @@ When `Strict Mode` is enabled, it introduces the following changes:
 The  `Strict Mode` best suits environments where security is paramount.
 
 Please ensure your application's configuration
-is correct and up-to-date when using strict mode, as it may cause your application to become unavailable due to the
+is correct and up to date when using strict mode, as it may cause your application to become unavailable due to the
 stricter checks.
 
 ### Checking if Strict Mode is activated
 
-`Strict Mode` is deactivated by default. You can easily verify its status by using the following command:
+`Strict Mode` is deactivated by default. You can verify its status by using the following command:
 
 ```console
-$ wp snicco/fortress shared cache:config --key=fortress.vaults_and_pillars.strict_option_vaults_and_pillars
+$ wp fort config cache ls --key=fortress.vaults_and_pillars.strict_option_vaults_and_pillars
 
 false
 ```
@@ -1291,16 +1287,16 @@ configuration:
 ``` 
 
 Once the change is
-made, [reload your configuration](../../configuration/01_how_to_configure_fortress.md#testing-your-configuration-sources):
+made, [reload your configuration](../../configuration/01_how_to_configure_fortress.md#testing-and-reloading-the-configuration):
 
 ```shell
-wp snicco/fortress shared config:test --reload-on-success
+wp fort config test --reload-on-success
 ```
 
 ## Security and Threat Models
 
-When correctly configured, the `Vaults & Pillars` offers a substantial layer of defense, safeguarding you from
-numerous common exploits within WordPress sites.
+When correctly configured, the `Vaults & Pillars` offers a significant layer of defense, safeguarding you from
+many common exploits within WordPress sites.
 
 Key threats mitigated by this module include:
 
@@ -1408,12 +1404,12 @@ maintained or developed with best practices in mind, might still resort to this 
 
 If you encounter this issue, the recommended action is to contact the plugin author and request them to use
 the get_option() method for retrieving options. This will ensure their plugin remains compatible with extensions
-like Fortress that utilize the Options API.
+like Fortress that use the Options API.
 
 ### An option with Vault/Pillar is fetched before Fortress boots
 
 While Fortress is designed to boot as a "Must-Use" plugin and hence, gets loaded very early in the WordPress boot
-process, there may be rare cases where other Must-Use plugins or the WordPress Core fetch an option before Fortress's
+process, there may be rare cases where other Must-Use plugins or WordPress Core fetch an option before Fortress's
 translation layer has a chance to boot.
 
 The `siteurl` and `home` options are notable examples where WordPress Core fetches these options before Must-Use plugins
@@ -1426,7 +1422,7 @@ redirection attacks.
 
 ### Nested options that are JSON encoded
 
-Some plugins store there nested settings as JSON, instead of using WordPress's default
+Some plugins store their nested settings as JSON, instead of using WordPress's default
 serialization method.
 
 This can be identified by an option NOT starting with `a:SOME_NUMBER:{` but instead with a `[` or `{`.
@@ -1487,4 +1483,4 @@ However, there is an option feature request [here](https://github.com/snicco/for
 
 ---
 
-Next: [WP-CLI](../../wp-cli/readme.md)
+Next: [WP-CLI](../../cli/readme.md)

@@ -70,7 +70,7 @@ Given a user that provides the password `cocoa-hospital-wold-belt`:
 -
 
 Prevents [confused deputy attacks](https://soatok.blog/2023/03/01/database-cryptography-fur-the-rest-of-us/#confused-deputies):
-An attacker can not swap his own password hash with the one of an admin user and log in using their own password.<br>
+An attacker cannot swap his own password hash with the one of an admin user and log in using their own password.<br>
 A password hash is always bound to the user ID for which it was initially created.
 
 - An attacker with write access to the database can't insert new user accounts because they do not have the HMAC key
@@ -101,14 +101,14 @@ Given a user that provides the password `cocoa-hospital-wold-belt`:
 This scheme provides all the benefits of the HMAC scheme above with the added benefit that:
 
 - An attacker that can access the database can't even begin to crack the password hashes because they are
-  encrypted with the [encryption key](../../getting-started/02_preparation.md#secrets) which is stored outside the
+  encrypted with the [encryption key](../../getting-started/advanced-setup/secret-managment.md) which is stored outside the
   database.
 
 #### Downsides
 
 The encrypted scheme was the default until version `1.0.0-beta.36` of Fortress.
 
-We chose to make in opt-in because of the reasons below:
+We chose to make it opt-in because of the reasons below:
 
 1. Due to the added encryption,
    the final string is greater than 255 character
@@ -125,7 +125,7 @@ We chose to make in opt-in because of the reasons below:
    While it's possible to decrypt all the data, there's no way for Fortress to know what data was "hashed/encrypted"
    by `wp_hash_password` aside of passwords since plugins might use it for input that is not a user's account password.
    <br>For that reason, leaving behind a compatability layer that would allow removing Fortress while keeping the hashes
-   intact would inevidablty requires leaving Fortress's encryption code behind and also secure manage Fortress's
+   intact would inevitably require leaving Fortress's encryption code behind and also secure manage Fortress's
    encryption secret.
 
 We still recommend using the encrypted scheme if you (as the site owner) can live with, or handle the downsides above.
@@ -149,13 +149,13 @@ However, none of them can rehash existing legacy password hashes proactively.
 
 Instead, typically, a user's password hash is only rehashed after successfully logging in (because this is the only time
 you have access to his plaintext password).
-It's an "opportunistic upgrade" strategy which is
+It's an "opportunistic upgrade" strategy, which is
 a [bad play](https://nakedsecurity.sophos.com/2016/12/15/yahoo-breach-ive-closed-my-account-because-it-uses-md5-to-hash-my-password/).
 
 Assuming your site currently has `100k` users and your database is hacked two months from now.
 In those two months, `20k` users logged into your site and thus had their passwords rehashed securely.
 
-This still leaves `80K` user passwords vulnerable simply because they did not login in on time.
+This still leaves `80K` user passwords vulnerable simply because they did not log in in on time.
 
 ### Proactive password rehashing in Fortress
 
@@ -186,14 +186,14 @@ Here is the (very) simplified summary of how this works:
    stores `new_strong_hash = fortress_hashing(password))`.
 
 You can perform this process automatically for all your users in batches **without** disrupting regular site operations using
-Fortress's [`wp snicco/fortress password upgrade-legacy-hashes` command](../../wp-cli/readme.md#upgrade-legacy-hashes).
+Fortress's [`wp fort password upgrade-legacy-hashes` command](../../cli/readme.md#password-upgrade-legacy-hashes).
 
 ### Force resetting all passwords
 
 The only downside to proactively rehashing all existing password hashes is that the plaintext passwords might be very
 insecure.
 
-> You can have the most secure password hashing in the world, but it doesn't matter if a user's password is "qwerty".
+> You can have the most secure password hashing in the world, but it doesn't matter if a user's password is "qwerty."
 
 There is no way to check if stored password hashes resulted from secure passwords since we don't have access to the
 plaintexts.
@@ -204,7 +204,7 @@ complies with Fortress's [password policy](password-policy.md).
 Surprisingly, there is no option in WordPress to bulk-reset user passwords.
 
 For that reason, Fortress includes
-the [`wp snicco/fortress password force-reset-all` command](../../wp-cli/readme.md#force-reset-all) to handle this
+the [`wp fort password force-reset-all` command](../../cli/readme.md#password-force-reset-all) to handle this
 process in batches **without** disrupting normal site operation.
 
 ### Disallowing legacy hashes
@@ -235,7 +235,7 @@ encryption keys.
 **Caution!**
 
 Only set [`allow_legacy_hashes`](../../configuration/02_configuration_reference.md#allow_legacy_hashes) to false if one
-of the following conditions are met:
+of the following conditions is met:
 
 - You are using Fortress on a brand-new site.
 - You have [upgraded all legacy hashes](#proactive-password-rehashing-in-fortress).
@@ -246,7 +246,7 @@ Otherwise, you might prevent yourself and other users from logging in.
 
 ### Informing users about forced password resets
 
-If you [force reset all user passwords](#force-resetting-all-passwords), you need to inform your users about this to
+If you [force-reset all user passwords](#force-resetting-all-passwords), you need to inform your users about this to
 avoid confusion.
 
 Fortress can't know how your site handles user logins (default wp-login vs. WooCommerce vs. LMS, etc.)
@@ -359,7 +359,7 @@ WordPress Core does not contain this error [anymore](https://core.trac.wordpress
 A more hypothetical issue listed here for completeness is making assumptions about the output length
 of `wp_hash_password`.
 
-The hash that is generated by default in WordPress has a length of `34` characters.
+The hash generated by default in WordPress has a length of `34` characters.
 
 The output of Fortress's `wp_hash_password` implementation is much larger (at least `200+` characters).
 

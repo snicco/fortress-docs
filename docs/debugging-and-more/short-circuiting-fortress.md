@@ -9,7 +9,7 @@
 
 ## Disabling specific modules
 
-Each of Fortress's [five modules](../readme.md#modules) can be used independently.
+Each of Fortress's [modules](../readme.md#modules) can be used independently.
 
 To temporarily disable a module remove it from the [`modules` option](../configuration/02_configuration_reference.md#modules).
 
@@ -20,14 +20,14 @@ Important: If for whatever reason you need to disable the Fortress password modu
 1. Disable the password module by removing it from the configuration.
 2. Reset the password hash for your account by running:<br><br>
     ```shell
-    wp user reset-password <your-username>
+    wp user reset-password your-username
     ```
 3. Reset your password using the link emailed to your inbox.
 4. Do whatever troubleshooting it is that you have to do.
 5. Enable Fortress again by removing the constant.
 6. **Only** if you [`disabled legacy hashes`](../modules/password/password-hashing.md#disallowing-legacy-hashes):<br><br>
     ```shell
-    wp user update <your-username> --user_pass=<your-old-password>
+    wp user update <your-username> --user_pass=your-old-password
     ```
 
 These steps are needed because [Fortress password hashes only work when Fortress is enabled](../modules/password/password-hashing.md#migrating-out-hashes).

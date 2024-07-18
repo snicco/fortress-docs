@@ -32,7 +32,7 @@ Each of these attacks can be carried out from a single IP or, way more commonly 
 
 ### How WordPress plugins fail
 
-Most WordPress security plugins can only protect against attacks from a single IP because they still operate with the 2000s mindset of "one attacker = one IP".
+Most WordPress security plugins can only protect against attacks from a single IP because they still operate with the 2000s mindset of "one attacker = one IP."
 Of course, this could not be further from the truth in 2023.
 
 Generally speaking, WordPress plugins use the following scheme:
@@ -45,12 +45,12 @@ The above scheme is useless against today's attackers that can carry out attacks
 
 Other downsides of solely relying on IPs for login-throttling include:
 
-- Legitimate users might be banned (corporate networks, public wifi, shared VPS, etc.).
+- Legitimate users might be banned (corporate networks, public Wi-Fi, shared VPS, etc.).
 - Huge database size and shrinking performance since each row typically represents one failed login.
 
 ### What about Fail2Ban?
 
-Fail2Ban was an excellent choice for many years. However, it operates under the faulty assumption that "one attacker = one (or a handful) of IPs", which makes it useless against attacks that involve thousands, if not millions, of attacking IPs.
+Fail2Ban was an excellent choice for many years. However, it operates under the faulty assumption that "one attacker = one (or a handful) of IPs," which makes it useless against attacks that involve thousands, if not millions, of attacking IPs.
 
 ### What about (re)Captcha?
 
@@ -78,19 +78,20 @@ Furthermore, instead of naively storing each failed login attempt in the databas
 
 Before we dive deeper, it's necessary to clarify the concept of a device ID.
 
-In Fortress, a device ID is a cryptographic signature that is stored in the user's browser as a cookie
+In Fortress, a device ID is a cryptographic signature stored in the user's browser as a cookie
 after he successfully logs in. The cookie has an expiration of one year.
 
-Fortress creates the signature by calculating the [BLAKE2B hash](https://libsodium.gitbook.io/doc/hashing/generic_hashing#notes) of the username with a [securely stored secret key](../../getting-started/02_preparation.md#secrets).
+Fortress creates the signature by calculating the [BLAKE2B hash](https://libsodium.gitbook.io/doc/hashing/generic_hashing#notes) of the username with a [securely stored secret key](../../getting-started/advanced-setup/secret-managment.md).
 
-- **An attacker can not forge a device ID**, unless he breaks the underlying cryptography in `ext-sodium` (the internet would be on fire).
-- A legitimate user can only use his device ID for his account.
+- **An attacker cannot forge a device ID**, unless he breaks the underlying cryptography in `ext-sodium` (the internet would be on fire).
+- A legitimate user can only use their device ID for his account.
 
 Fortress trusts login requests with a valid device ID for the target username to be carried out by the account owner and, consequently, will impose a much looser rate limit even when the site is under heavy attack.
 
 **Think of a device ID as a cat flap.**
 
-Once the front door shuts closed due to the site being attacked, a legitimate user is not affected since he can enter through the cat flap.
+Once the front door shuts due to the site being attacked,
+a legitimate user is not affected since they can enter through the cat flap.
 
 | Bots have a 30-minute wait time.<br><br>![No device id](../../_assets/images/rate-limit/rate-limit-no-device-id.png) | The legitimate account owner only has a 20-second wait time after five failed attempts.<br><br>![Devide id](../../_assets/images/rate-limit/rate-limit-with-device-id.png) |
 |----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -131,7 +132,7 @@ Fortress will throttle all other users with varying strictness based on the foll
 
 **General rules:**
 
-- A request with **invalid** credentials will only decrease the amount of [available tokens](implementation.md) if throttling is NOT activated yet.
+- A request with **invalid** credentials will only decrease the number of [available tokens](implementation.md) if throttling is NOT activated yet.
 - A request with **valid** credentials during throttling will NOT log the user in.
 - If multiple dimensions throttle a user, the strictest limit will apply.
 
@@ -165,7 +166,7 @@ Example request flow:
 
 #### IP throttling
 
-- [burst](implementation.md#token-bucket-rate-limiter): `20`, higher burst prevent false-positives (cooperate offices, public wifi, shared proxies, etc.)
+- [burst](implementation.md#token-bucket-rate-limiter): `20`, higher burst prevent false-positives (cooperate offices, public Wi-Fi, shared proxies, etc.)
 - [refill_frequency](implementation.md#token-bucket-rate-limiter): `30 minutes`
 - Tries/day from the same IP for any username: '48 = 24 * 60 * 60 / (15 * 60)`
 - configuration_options: [`username_burst`](../../configuration/02_configuration_reference.md#username_burst) and [`username_refill_one_token_seconds`](../../configuration/02_configuration_reference.md#username_refill_one_token_seconds)
@@ -233,9 +234,9 @@ As an example, EDD will always display the following error message no matter wha
 
 They do this because they don't want to show the "invalid username" or "invalid password" messages that WordPress Core returns.
 
-This intent is good, but swallowing all error messages is lousy execution.
+The intent is good, but swallowing all error messages is lousy execution.
 
-Instead, something along the lines of the following code has to be used in the plugin:
+Instead, something like the following code has to be used in the plugin:
 
 ```php
 $credentials = [
@@ -264,18 +265,21 @@ return $user_or_error;
 
 ### Fail2Ban integration
 
-Fail2Ban is not sufficient on its own, but blocking IPs that fail to respect Fortress's rate-limiting permanently can be beneficial.
+Fail2Ban is not enough on its own, but blocking IPs that fail to respect Fortress's rate-limiting permanently can be beneficial.
 
 In this scenario, Fail2Ban serves the purpose of reducing the load on the server. **It's not needed for security!**
 
-If the [`log_to_syslog`](../../configuration/02_configuration_reference.md#log_to_syslog) option is enabled, Fortress will write the following message to the configured system log, if an **invalid** login request is made **during active throttling**:
+If the [`log_to_syslog`](../../configuration/02_configuration_reference.md#log_to_syslog) option is enabled,
+Fortress will write the following message to the configured system log
+if an **invalid** login request is made **during active throttling**:
 
 
 `Failed login while throttling was activated. Context: {"username": "admin"}. Remote Addr: 68.154.20.235`
 
 You can configure strict Fail2Ban jails since an honest user should never make invalid login requests during throttling. Bots, however, will do so.
 
-As a starting point, we recommend permanently banning an IP if the above message appears three times a day. But, of course, your threat model may vary.
+As a starting point, we recommend permanently banning an IP if the above message appears three times a day. 
+But of course, your threat model may vary.
 
 ### IP detection
 

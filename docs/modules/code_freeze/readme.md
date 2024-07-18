@@ -45,11 +45,11 @@ In the WordPress ecosystem, the threat model usually stops at the point of an at
 
 Both users and vendors say something along the lines of:
 
-> Oh well, if an admin account is compromised, there's nothing we can do anyways.
+> Oh well, if an admin account is compromised, there's nothing we can do anyway.
 
 **This is crazy** and practically unheard of in other mature software ecosystems.
 
-In our opinion, it is completely unacceptable to build Web Applications with WordPress (LMS, E-Commerce, Membership
+In our opinion, it is completely unacceptable to build Web Applications with WordPress (LMS, E-Commerce, Membership,
 etc.) or
 anything remotely important to a business with this mindset.
 
@@ -93,7 +93,7 @@ after the initial site build is complete—expect on very rare occasions.
 similar)
 account through any means.
 
-It doesn't matter how they got in & that Fortress's other modules make it very hard to compromise an account without a
+It doesn't matter how they got in & that Fortress's other modules make it tough to compromise an account without a
 zero-day.
 
 That's what having multiple layers of defense is all about - Redundancy.
@@ -129,7 +129,7 @@ This is done in a dynamic way that doesn't deviate too much from the "usual Word
 - `Code Freeze` does NOT prevent WordPress core updates.
 - `Code Freeze` does NOT prevent WordPress auto-updates.
 - `Code Freeze` does NOT prevent the deletion of inactive plugins.
-- `Code Freeze` does NOT modify any filesystem permissions or attributes. This is best locked down at the OS-level with
+- `Code Freeze` does NOT modify any filesystem permissions or attributes. This is best locked down at the OS level with
   an [immutable filesystem](#immutable-filesystems).
 
 All of this ensures that the site can still be kept up to date as usual without incurring all the risk that unrestricted
@@ -181,9 +181,9 @@ When `Code Freeze` is active, the plugins and themes pages in the admin interfac
 In the above screenshot, WordPress automatically removes the "Add New" button, while
 Fortress adds a notice to the top of the page to inform the user about the limitations.
 
-WordPress also removes "row actions" automatically, however, it does NOT do so for the bulk actions dropdown.
+WordPress also removes "row actions" automatically, however, it does NOT do so for the bulk-actions dropdown.
 
-It's still possible to update plugins, and enable auto-updates for plugins as usual.
+It's still possible to update plugins and enable auto-updates for plugins as usual.
 
 ![Themes Page with Code Freeze](../../_assets/images/code-freeze/themes-page-ui.png)
 
@@ -211,7 +211,7 @@ If you don't want to use a staging environment, you can:
 - a) Install any wp.org plugin using WP-CLI: `wp plugin install <slug> --activate`
 - b) Upload "pro" plugins via S(FTP)/SSH and activate them via the admin dashboard.
 - c) Set `code_freeze.enabled` to `no` temporarily and then install the plugin via the admin dashboard. This requires a
-  Fortress [config reload](../../configuration/01_how_to_configure_fortress.md#testing-your-configuration-sources).
+  Fortress [config reload](../../configuration/01_how_to_configure_fortress.md#testing-and-reloading-the-configuration).
 - d) [Short-Circuit](#i-need-to-short-circuit-code-freeze-temporarily) `Code Freeze` (see below).
 
 ### I need to short-circuit Code Freeze temporarily
@@ -235,7 +235,7 @@ functionality depending on their value.
 
 An example might be cache plugins that stop creating new cache files, etc.
 
-Furthermore, these constants prevent the automatic updates of WordPress core, plugins and themes and you can't see any update notifications in the admin dashboard
+Furthermore, these constants prevent the automatic updates of WordPress core, plugins and themes, and you can't see any update notifications in the admin dashboard
 for plugins anymore.
 
 If that's your goal is to prevent auto-updates, a better way is using the below must-use plugin.
@@ -271,10 +271,10 @@ in addition to the effects of the constants.
 
 ### Loose Ends: Page builder PHP blocks
 
-Some of the newer page builders allow users to insert PHP code blocks into their pages which
+Some of the newer page builders allow users to insert PHP code blocks into their pages, which
 are then executed with eval.
 
-In our opinion this functionality should not exist for obvious security reasons, and
+In our opinion, this functionality should not exist for obvious security reasons, and
 the [Bricks](https://snicco.io/vulnerability-disclosure/bricks/unauthenticated-rce-in-bricks-1-9-6)
 and [Cwicly](https://snicco.io/vulnerability-disclosure/cwicly/remote-code-execution-cwicly-1-4-0-2) RCE vulnerabilities
 only proof the point that it's super hard to get this right.
@@ -374,7 +374,7 @@ Instead, you can restrict the filesystem permissions of the PHP user and webserv
 Assuming your WordPress sites lives at `/var/www/site.com` you can set the following permissions:
 
 - Directories: `555` (Read and Execute)
-- Files: `444` (Read only)
+- Files: `444` (Read-only)
 
 ```shell
 find /var/www/site.com -type d -exec chmod 555 {} +

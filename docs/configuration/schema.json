@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
   "$id": "https://snicco.io/schemas/fortress.json",
-  "$comment": "For more information about the Snicco Fortress Security Plugin refer to [the documentation](https://github.com/fortress-docs).",
+  "$comment": "For more information about Fortress refer to [the documentation](https://github.com/fortress-docs).",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -40,15 +40,22 @@
     "cli_namespace": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9_/-]{2,}$",
-      "default": "snicco/fortress",
+      "default": "fort",
       "description": "The namespace used for WP-CLI commands. Must be valid according to the WP-CLI command name rules."
     },
     "challenges_table_name": {
-      "type": "string",
-      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ],
       "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-      "default": "snicco_fortress_challenges",
+      "default": null,
       "description": "The table name (without prefix) where Fortress stores auth challenges."
+    },
+    "db_table_namespace": {
+      "type": "string",
+      "default": "snicco_fortress",
+      "description": "Controls the prefix that will be used for all database tables created by Fortress."
     },
     "privileged_user_roles": {
       "type": "array",
@@ -62,67 +69,18 @@
       "description": "An array of WordPress user roles that Fortress considers to be privileged."
     },
     "theme_css_file": {
-      "type": "string",
-      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ],
       "pattern": "^\\/(?!.*\\/\\/)([a-zA-Z\\-\\/]+)$",
-      "default": "/wp-content/mu-plugins/snicco-fortress/default-theme.css",
+      "default": null,
       "description": "A path to an existing CSS file that defines CSS variables to customize the frontend appearance of Fortress. Relative to the domain."
     },
     "session": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "sudo_mode_timeout": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 600,
-          "description": "The interval in seconds during which Fortress will consider a session to be in sudo mode after logging in."
-        },
-        "sudo_mode_timeout_per_cap": {
-          "type": "object",
-          "patternProperties": {
-            "^[a-zA-Z-_]+$": {
-              "type": "integer",
-              "minimum": 1
-            }
-          },
-          "default": {},
-          "description": "An object that can be used to specify sudo mode timeouts for users with specific capabilities."
-        },
-        "idle_timeout": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 1800,
-          "description": "The interval in seconds after which a user without activity is logged out."
-        },
-        "idle_timeout_per_cap": {
-          "type": "object",
-          "patternProperties": {
-            "^[a-zA-Z-_]+$": {
-              "type": "integer",
-              "minimum": 1
-            }
-          },
-          "default": {},
-          "description": "An object that can be used to specify idle timeouts for users with specific capabilities."
-        },
-        "rotation_timeout": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 1200,
-          "description": "The interval after which the user's session token is rotated."
-        },
-        "rotation_timeout_per_cap": {
-          "type": "object",
-          "patternProperties": {
-            "^[a-zA-Z-_]+$": {
-              "type": "integer",
-              "minimum": 1
-            }
-          },
-          "default": {},
-          "description": "An object that can be used to specify rotation timeouts for users with specific capabilities."
-        },
         "absolute_timeout": {
           "type": "integer",
           "minimum": 1,
@@ -157,19 +115,93 @@
           "default": {},
           "description": "An object that can be used to specify absolute timeouts for users with specific capabilities, applicable only to users that checked the 'remember me' option during login."
         },
-        "session_table_name": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-          "default": "snicco_fortress_sessions",
-          "description": "The name without the prefix of the database table that stores user sessions."
+        "disable_rotation_for_ajax_like_requests_per_cap": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "An option to disable the rotation of session tokens for ajax-like requests for users with one of the specified capabilities."
         },
-        "remember_cookie_name": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[a-zA-Z0-9!#$%&'*+-.^_`|~]+$",
-          "default": "snicco_fortress_remember_me",
-          "description": "Determines the name of a marker cookie that Fortress uses to determine if a user wants to be remembered."
+        "idle_timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1800,
+          "description": "The interval in seconds after which a user without activity is logged out."
+        },
+        "idle_timeout_per_cap": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z-_]+$": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "default": {},
+          "description": "An object that can be used to specify idle timeouts per user capability."
+        },
+        "non_sudo_mode_recheck_frequency": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10,
+          "description": "Controls how often Fortress will make an ajax-request to the backend to check if a user's session has re-entered the sudo mode."
+        },
+        "protected_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "administrator",
+            "activate_plugins",
+            "delete_plugins",
+            "delete_themes",
+            "delete_users",
+            "edit_dashboard",
+            "edit_files",
+            "edit_plugins",
+            "edit_theme_options",
+            "edit_themes",
+            "edit_users",
+            "edit_user",
+            "export",
+            "import",
+            "install_plugins",
+            "install_themes",
+            "manage_options",
+            "promote_users",
+            "remove_users",
+            "list_users",
+            "create_users",
+            "switch_themes",
+            "unfiltered_upload",
+            "update_core",
+            "update_plugins",
+            "update_themes",
+            "manage_categories",
+            "delete_pages",
+            "delete_private_pages",
+            "delete_published_pages",
+            "delete_others_pages",
+            "delete_posts",
+            "delete_private_posts",
+            "delete_published_posts",
+            "delete_others_posts",
+            "view_site_health_checks",
+            "install_languages",
+            "edit_comment",
+            "create_sites",
+            "delete_sites",
+            "manage_network",
+            "manage_sites",
+            "manage_network_users",
+            "manage_network_plugins",
+            "manage_network_themes",
+            "manage_network_options",
+            "upgrade_network",
+            "setup_network"
+          ],
+          "description": "A list of capabilities that will be removed from a user's session if they're not in sudo mode anymore."
         },
         "protected_pages": {
           "type": "array",
@@ -197,17 +229,68 @@
             "/wp-admin/erase-personal-data.php",
             "/wp-admin/theme-editor.php",
             "/wp-admin/plugin-editor.php",
-            "/snicco-fortress/auth/totp/manage*"
+            "/snicco-fortress/auth/totp/manage*",
+            "/wp-admin/network.php",
+            "/wp-admin/ms-admin.php",
+            "/wp-admin/ms-delete-site.php",
+            "/wp-admin/ms-edit.php",
+            "/wp-admin/ms-options.php",
+            "/wp-admin/ms-sites.php",
+            "/wp-admin/ms-themes.php",
+            "/wp-admin/ms-upgrade-network.php",
+            "/wp-admin/network/*"
           ],
-          "description": "The protected_pages option specifies URL paths that a user can only access if his session is still in sudo mode. You can use a * character as a wildcard."
+          "description": "Specifies URL paths that a user can only access if his session is still in sudo mode. You can use a * character as a wildcard."
         },
-        "disable_rotation_for_ajax_like_requests_per_cap": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "remember_cookie_name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9!#$%&'*+-.^_`|~]+$",
+          "default": "snicco_fortress_remember_me",
+          "description": "Determines the name of a marker cookie that Fortress uses to determine if a user wants to be remembered."
+        },
+        "rotation_timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1200,
+          "description": "The interval after which the user's session token is rotated."
+        },
+        "rotation_timeout_per_cap": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z-_]+$": {
+              "type": "integer",
+              "minimum": 1
+            }
           },
-          "default": [],
-          "description": "The `disable_rotation_for_ajax_like_requests_per_cap` option can be used to disable the rotation of session tokens for ajax like requests for users with any of the specified capabilities."
+          "default": {},
+          "description": "An object that can be used to specify rotation timeouts for users with specific capabilities."
+        },
+        "sudo_mode_timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 600,
+          "description": "Controls the interval in seconds during which Fortress will consider a session to be in sudo mode after logging in."
+        },
+        "sudo_mode_timeout_per_cap": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z-_]+$": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "default": {},
+          "description": "An object that can be used to specify sudo mode timeouts per capability."
+        },
+        "table_name": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "default": null,
+          "description": "Controls the name of the database table where Fortress stores user sessions."
         }
       }
     },
@@ -216,10 +299,13 @@
       "additionalProperties": false,
       "properties": {
         "totp_secrets_table_name": {
-          "type": "string",
-          "description": "The name of the database table that stores users' TOTP secrets.",
+          "type": [
+            "null",
+            "string"
+          ],
+          "description": "[DEPRECATED] The name of the database table that stores users' TOTP secrets.",
           "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-          "default": "snicco_fortress_totp_secrets"
+          "default": null
         },
         "totp_sha_algo": {
           "type": "string",
@@ -275,7 +361,7 @@
         "magic_link_allow_requesting_via_http": {
           "type": "boolean",
           "default": true,
-          "description": "Controls whether Fortress allows anybody to request a magic login link via the UI/HTTP.\nSetting this option to `false` makes Fortress behave as is the functionality to request Magic Links doesn't exist."
+          "description": "Controls whether Fortress allows anybody to request a magic login link via the UI/HTTP.\nSetting this option to `false` makes Fortress behave as is the functionality to request Magic Links via the Web doesn't exist."
         }
       }
     },
@@ -293,13 +379,18 @@
         },
         "disable_application_passwords": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Controls whether WordPress application passwords are entirely disabled."
         },
         "allow_legacy_hashes": {
           "type": "boolean",
           "default": true,
           "description": "Controls whether Fortress will try to validate password hashes created using the insecure default hashing algorithm of WordPress."
+        },
+        "allow_legacy_hashes_for_non_passwords": {
+          "type": "boolean",
+          "default": true,
+          "description": "Controls whether Fortress allows legacy hashes for non-passwords."
         },
         "default_hash_strength": {
           "type": "string",
@@ -353,9 +444,12 @@
           "description": "The storage option can be used to explicitly tell Fortress to use the database as a rate-limit storage."
         },
         "cache_group": {
-          "type": "string",
-          "default": "snicco_fortress_rate_limits",
-          "description": "The cache_group option will either be used as a WP Object cache group for storing rate limits or, if no object cache is available, as the database table name for storing rate limits."
+          "type": [
+            "null",
+            "string"
+          ],
+          "default": null,
+          "description": "[DEPRECATED] Controls the object cache group that Fortress uses to store rate limit data."
         },
         "device_id_cookie_prefix": {
           "type": "string",
@@ -419,7 +513,7 @@
         "syslog_daemon": {
           "type": "string",
           "default": "snicco_fortress",
-          "description": "The syslog_deamon option will be prepended to all messages that Fortress logs to the syslog."
+          "description": "The syslog_daemon option will be prepended to all messages that Fortress logs to the syslog."
         },
         "syslog_flags": {
           "type": "integer",
@@ -432,6 +526,11 @@
           "minimum": 1,
           "default": 32,
           "description": "A bitmask, valid options can be found in the openlog manual. Defaults to LOG_AUTH"
+        },
+        "use_hashed_ips": {
+          "type": "boolean",
+          "default": false,
+          "description": "[DEPRECATED] Controls whether Fortress will hash the IP address before storing it in the database."
         }
       }
     },
@@ -514,7 +613,11 @@
           "type": "string",
           "description": "Controls whether the code freeze module is enabled.",
           "default": "auto",
-          "enum": ["auto", "yes", "no"]
+          "enum": [
+            "auto",
+            "yes",
+            "no"
+          ]
         }
       }
     }

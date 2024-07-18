@@ -25,7 +25,7 @@ Fortress contains a custom [Token-Bucket](https://en.wikipedia.org/wiki/Token_bu
 - [Login Throttling](login-throttling.md)
 - [Password reset throttling](password-reset-throttling.md)
 
-In the future, we might open up the PHP API to the rate limiter so you can implement your applications.
+In the future, we might open up the PHP API to the rate limiter, so you can implement your applications.
 
 ## Token Bucket Rate Limiter
 
@@ -50,7 +50,7 @@ A bucket with `five` initial tokens (`burst`) and a `refill frequency` of `one` 
 - Request 8 => OK => 0 tokens left.
 - Request 9 => DENIED => 0 tokens lefts.
 - `Wait 5 seconds` => 5 tokens available again.
-- `Wait 5 more seconds` => Still 5 tokens available, the bucket "overflows".
+- `Wait 5 more seconds` => Still 5 tokens available, the bucket "overflows."
 - Request 10 => OK => 4 tokens left.
 
 Over the long term, this bucket allows one request per second, which happens to be the (`refill frequency`).
