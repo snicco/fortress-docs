@@ -1,26 +1,28 @@
 # Fortress production setup
 
 <!-- TOC -->
-  * [Overview](#overview)
-  * [Versioning](#versioning)
-  * [Downloading a Fortress Release](#downloading-a-fortress-release)
+
+* [Overview](#overview)
+* [Versioning](#versioning)
+* [Downloading a Fortress Release](#downloading-a-fortress-release)
     * [Download using the GitHub UI](#download-using-the-github-ui)
     * [GitHub API](#github-api)
-      * [Create a GitHub personal access token (PAT)](#create-a-github-personal-access-token-pat)
-      * [Download using the GitHub API](#download-using-the-github-api)
+        * [Create a GitHub personal access token (PAT)](#create-a-github-personal-access-token-pat)
+        * [Download using the GitHub API](#download-using-the-github-api)
     * [Download using Composer](#download-using-composer)
     * [Other download methods](#other-download-methods)
-  * [Server setup](#server-setup)
+* [Server setup](#server-setup)
     * [Create a Fortress "home" directory](#create-a-fortress-home-directory)
     * [Create an empty Fortress config file](#create-an-empty-fortress-config-file)
     * [Create Fortress secrets](#create-fortress-secrets)
     * [Create a Fortress loader and activate Fortress](#create-a-fortress-loader-and-activate-fortress)
-  * [Optimal file system permissions](#optimal-file-system-permissions)
+* [Optimal file system permissions](#optimal-file-system-permissions)
     * [For Fortress source code](#for-fortress-source-code)
     * [For the Fortress home directory](#for-the-fortress-home-directory)
-  * [Other considerations](#other-considerations)
+* [Other considerations](#other-considerations)
     * [Full-page caching](#full-page-caching)
     * [Log rotation](#log-rotation)
+
 <!-- TOC -->
 
 ---
@@ -37,7 +39,8 @@ site. By following these instructions, you will:
 
 **Requirements for this guide:**
 
-- SSH access to your server.
+- SSH access to your server - You can perform the installation as root, sudo, or a system user that owns the WordPress
+  site.
 - Familiarity with basic Linux commands.
 - Access to the `snicco/fortress-dist` repository on GitHub.
 
@@ -457,70 +460,7 @@ that will be included before loading Fortress.
     define('SNICCO_FORTRESS_LIBSODIUM_GENERIC_ENCRYPTION_KEY_HEX', 'b90c134244815b9e88aa0d02aed72f649baa4f6d259df0728a031f111e62d329');
     ```
 
-### Create a Fortress loader and activate Fortress
-
-Fortress **MUST** be loaded as early as possible in the WordPress
-request lifecycle.
-
-To ensure that, Fortress contains a "loader file" that
-you have to copy into your WordPress site's `mu-plugins` directory.
-
-After copying the Fortress loader, it is part of **your** code/site.
-
-- Fortress will never modify this file.
-- You can customize it to your liking and include it in version control if you're using Git.
-
-You can see the default contents of the loader file [here](../_assets/fortress-loader.php).
-
-1. Navigate to the web root of your WordPress site (the directory that contains the `index.php` file, etc.)
-   For example:
-   ```shell
-   cd /sites/snicco.io/public
-   ```
-   or
-   ```shell
-    cd /var/www/snicco.io/htdocs
-    ```
-   or For Bedrock sites:
-   ```shell
-    cd /var/www/snicco.io/web/app
-    ```
-2. Enable the WordPress maintenance mode to prevent any request from being processed during the Fortress activation.
-    ```shell
-    wp maintenance-mode activate
-    ```
-3. Navigate to the `mu-plugins` directory of your WordPress site.
-    ```shell
-    cd wp-content/mu-plugins
-    ```
-4. Move the Fortress loader to `mu-plugins/0000000000000000000000000000-fortress-loader.php`.
-    ```shell
-    mv snicco-fortress/releases/current/stubs/fortress-loader.txt 0000000000000000000000000000-fortress-loader.php
-    ```
-   The leading zeros in the filename ensure that WordPress will load the Fortress loader
-   before anything else.
-   This is crucial.
-5. Fortress's CLI is now available, and you can finish the installation by creating Fortress's database tables
-     ```shell
-     wp fort setup
-     ```
-6. Deactivate the WordPress maintenance mode.
-    ```shell
-    wp maintenance-mode deactivate
-    ```
-7. Fortress is now installed 🥳!
-    - If you try to log in as an administrator, you will be prompted to set up your
-      two-factor authentication (2FA) settings.
-    - Try logging in with a CLI generated magic link for a user.
-      ```shell
-       wp fort magic-link create your-username
-    
-       # => https://domain.com/snicco-fortress/auth/magic-link/challenge/EXqrVmck3eTqeXKIL0YyCXlJbrqvTwOdMjPk4TLXQIlaN1xHmNrqshTY9yqtmm1ZogyYB5V9fCFY?action=magic-login-primary
-      ```
-8. Proceed with the [optimal file system permissions](#optimal-file-system-permissions) setup to harden your Fortress
-   installation.
-
-## Optimal file system permissions
+### Configure file system permissions
 
 Most modern hosting stacks use a setup where:
 
@@ -531,12 +471,12 @@ Most modern hosting stacks use a setup where:
 
 The ideal setup of file system permissions would ensure all the following:
 
-### For Fortress source code
+#### For Fortress source code
 
 - (Only) `domaincom` can `read` the Fortress source code
   at `/path-to-mu-plugins/snicco-fortress`.
 - `webserver` can `read/execute` the static assets
-  from `/path-to-mu-plugins/snicco-fortress/releases/current/public`.
+  at `/path-to-mu-plugins/snicco-fortress/releases/current/public`.
   (`execute` is likely required to allow traversing/listing directories)
 - Anything but the `public` directory is fully `immutable`/`read-only`. There is no reason for it to change unless a
   new Fortress version is deployed.
@@ -549,9 +489,11 @@ The ideal setup of file system permissions would ensure all the following:
     - Replace `/path-to-mu-plugins` with the full path to your WordPress site's must-use plugins directory.
     - Replace `domaincom` with the system user that owns the WordPress files.<br><br>
 
-2. Make the Fortress source code "read-only" for the system user, and unreadable for everybody else.
+2. Make the Fortress directories "read/execute" for everyone, and all files "read-only," only for the system user.
+   Note: `555` is chosen for directories because webservers like Nginx typically need to be able to "execute" (list)
+   every nested directory from where they serve files.
     ```shell
-    find /path-to-mu-plugins/snicco-fortress/releases -type d -exec chmod 500 {} +
+    find /path-to-mu-plugins/snicco-fortress/releases -type d -exec chmod 555 {} +
     find /path-to-mu-plugins/snicco-fortress/releases -type f -exec chmod 400 {} +
     ```
     - Replace `/path-to-mu-plugins` with the full path to your WordPress site's must-use plugins directory.<br><br>
@@ -565,15 +507,13 @@ The ideal setup of file system permissions would ensure all the following:
     - If you don't have root access to your server, it's okay to skip this step.
     - Setting the immutable flag means that nobody, not even `root` can change the source code, without removing the
       flag first with `chattr -i`.<br><br>
-4. Set the Fortress assets (CSS, JS, etc.) read/execute to everyone.
+4. Set the Fortress assets (CSS, JS, etc.) read-only to everyone.
     ```shell
-    find /path-to-mu-plugins/snicco-fortress/releases/current/public -type d -exec chmod 555 {} +
     find /path-to-mu-plugins/snicco-fortress/releases/current/public -type f -exec chmod 444 {} +
     ```
     - Replace `/path-to-mu-plugins` with the full path to your WordPress site's must-use plugins directory.
-    - Execute permissions are probably required for your webserver to list directory contents.
 
-### For the Fortress home directory
+#### For the Fortress home directory
 
 - (Only) `domaincom` can `read/write/execute` in the Fortress home directory at `/path-to-fortress-home`.
 - The `secrets.php` file is `read-only/immutable`. Secrets should never be changed unless you explicitly want to rotate
@@ -619,6 +559,84 @@ The ideal setup of file system permissions would ensure all the following:
    sudo chattr +i /path-to-fortress-home/secrets.php
    ```
    If you don't have `sudo` or `root` access to your server, you can skip this step.
+
+### Create a Fortress loader and activate Fortress
+
+Fortress **MUST** be loaded as early as possible in the WordPress
+request lifecycle.
+
+To ensure that, Fortress contains a "loader file" that
+you have to copy into your WordPress site's `mu-plugins` directory.
+
+After copying the Fortress loader, it is part of **your** code/site.
+
+- Fortress will never modify this file.
+- You can customize it to your liking and include it in version control if you're using Git.
+
+You can see the default contents of the loader file [here](../_assets/fortress-loader.php).
+
+1. Navigate to the web root of your WordPress site (the directory that contains the `index.php` file, etc.)
+   For example:
+   ```shell
+   cd /sites/snicco.io/public
+   ```
+   or
+   ```shell
+    cd /var/www/snicco.io/htdocs
+    ```
+   or For Bedrock sites:
+   ```shell
+    cd /var/www/snicco.io/web/app
+    ```
+2. Enable the WordPress maintenance mode to prevent any request from being processed during the Fortress activation.
+    ```shell
+    wp maintenance-mode activate
+    ```
+   🚨 If you're running the installation as `root` or `sudo`, run the CLI command as:
+    ```shell
+    sudo -u domaincom wp maintenance-mode activate
+    ```
+    - Replace `domaincom` with the system user that owns the WordPress files.
+3. Navigate to the `mu-plugins` directory of your WordPress site.
+    ```shell
+    cd wp-content/mu-plugins
+    ```
+4. Move the Fortress loader to `mu-plugins/0000000000000000000000000000-fortress-loader.php`.
+    ```shell
+    mv snicco-fortress/releases/current/stubs/fortress-loader.txt 0000000000000000000000000000-fortress-loader.php
+    ```
+   The leading zeros in the filename ensure that WordPress will load the Fortress loader
+   before anything else.
+   This is crucial.
+5. Fortress's CLI is now available, and you can finish the installation by creating Fortress's database tables
+     ```shell
+     wp fort setup
+     ```
+   🚨 If you're running the installation as `root` or `sudo`, run the CLI command as:
+    ```shell
+    sudo -u domaincom wp fort setup
+    ```
+   - Replace `domaincom` with the system user that owns the WordPress files.
+6. Deactivate the WordPress maintenance mode.
+    ```shell
+    wp maintenance-mode deactivate
+    ```
+   🚨 If you're running the installation as `root` or `sudo`, run the CLI command as:
+    ```shell
+    sudo -u domaincom wp maintenance-mode deactivate
+    ```
+   - Replace `domaincom` with the system user that owns the WordPress files.
+
+Fortress is now installed 🥳!
+
+- If you try to log in as an administrator, you will be prompted to set up your
+  two-factor authentication (2FA) settings.
+- Try logging in with a CLI generated magic link for a user.
+  ```shell
+   wp fort magic-link create your-username
+
+   # => https://domain.com/snicco-fortress/auth/magic-link/challenge/EXqrVmck3eTqeXKIL0YyCXlJbrqvTwOdMjPk4TLXQIlaN1xHmNrqshTY9yqtmm1ZogyYB5V9fCFY?action=magic-login-primary
+  ```
 
 ## Other considerations
 
