@@ -1,28 +1,27 @@
 # Fortress production setup
 
 <!-- TOC -->
-
-* [Overview](#overview)
-* [Versioning](#versioning)
-* [Downloading a Fortress Release](#downloading-a-fortress-release)
+* [Fortress production setup](#fortress-production-setup)
+  * [Overview](#overview)
+  * [Versioning](#versioning)
+  * [Downloading a Fortress Release](#downloading-a-fortress-release)
     * [Download using the GitHub UI](#download-using-the-github-ui)
     * [GitHub API](#github-api)
-        * [Create a GitHub personal access token (PAT)](#create-a-github-personal-access-token-pat)
-        * [Download using the GitHub API](#download-using-the-github-api)
+      * [Create a GitHub personal access token (PAT)](#create-a-github-personal-access-token-pat)
+      * [Download using the GitHub API](#download-using-the-github-api)
     * [Download using Composer](#download-using-composer)
     * [Other download methods](#other-download-methods)
-* [Server setup](#server-setup)
+  * [Server setup](#server-setup)
     * [Create a Fortress "home" directory](#create-a-fortress-home-directory)
     * [Create an empty Fortress config file](#create-an-empty-fortress-config-file)
     * [Create Fortress secrets](#create-fortress-secrets)
+    * [Configure file system permissions](#configure-file-system-permissions)
+      * [For Fortress source code](#for-fortress-source-code)
+      * [For the Fortress home directory](#for-the-fortress-home-directory)
     * [Create a Fortress loader and activate Fortress](#create-a-fortress-loader-and-activate-fortress)
-* [Optimal file system permissions](#optimal-file-system-permissions)
-    * [For Fortress source code](#for-fortress-source-code)
-    * [For the Fortress home directory](#for-the-fortress-home-directory)
-* [Other considerations](#other-considerations)
+  * [Other considerations](#other-considerations)
     * [Full-page caching](#full-page-caching)
     * [Log rotation](#log-rotation)
-
 <!-- TOC -->
 
 ---
