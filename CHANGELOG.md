@@ -1,3 +1,11 @@
+# [1.0.0-beta.41](https://github.com/snicco/enterprise/compare/1.0.0-beta.40...1.0.0-beta.41) (2024-08-24)
+
+
+### Bug Fixes
+
+* gracefully handle empty 2fa redirect context ([1473755](https://github.com/snicco/enterprise/commit/1473755509b05e86878f8da9e5f1d26d0b6e817f)), closes [#171](https://github.com/snicco/enterprise/issues/171)
+* remove noisy errors on session status route for logged-out users ([2a2b399](https://github.com/snicco/enterprise/commit/2a2b399fe180172bb0a4f6589be5cf1936cd1cdc)), closes [#168](https://github.com/snicco/enterprise/issues/168)
+
 # [1.0.0-beta.40](https://github.com/snicco/enterprise/compare/1.0.0-beta.39...1.0.0-beta.40) (2024-07-18)
 
 
