@@ -1,3 +1,11 @@
+# [1.0.0-beta.42](https://github.com/snicco/enterprise/compare/1.0.0-beta.41...1.0.0-beta.42) (2024-08-25)
+
+
+### Bug Fixes
+
+* don't redirect to force 2fa setup for "ajax-like" requests ([ddb661e](https://github.com/snicco/enterprise/commit/ddb661ef12597532deaf85b7bff42f18c9f3e969))
+* throw exceptions if password-pluggable functions are already defined ([ff5881f](https://github.com/snicco/enterprise/commit/ff5881f2d4161fdd9efa20d0ad4f5e56a7901fc9))
+
 # [1.0.0-beta.41](https://github.com/snicco/enterprise/compare/1.0.0-beta.40...1.0.0-beta.41) (2024-08-24)
 
 
