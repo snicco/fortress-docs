@@ -5,20 +5,21 @@
 * [Audit logs](#audit-logs)
 <!-- TOC -->
 
-**Important:** The log format and log file names are not yet set in stone, so please refrain from building any functionality (i.e., log parsing) on top of it for now.
+🚨🚨 The log format and log file names are currently not covered by any backwards compatibility guarantees.
+The only BC promise is that Fortress will log any type of log to the configured [log directory](../getting-started/02_installation.md#create-a-fortress-home-directory).
 
 ## Error logs
 
 Fortress will log exceptions thrown during its execution to two places:
 
-- To `STDERR` using the [`error_log` function](https://www.php.net/manual/en/function.error-log.php). On most WordPress websites, this will be the `wp-content/debug.log` file. Since this file might contain log messages from many sources, Fortress will prefix all its log entries with either `snicco_fortress.HTTP` or `snicco_fortress.CLI`, depending on the runtime environment where the error happened.
+- To `STDERR` using the [`error_log` function](https://www.php.net/manual/en/function.error-log.php). On most WordPress websites, this will be the `wp-content/debug.log` file. Since this file might contain log messages from many sources, Fortress will prefix all its log entries with either `snicco_fortress` or `snicco_fortress`, depending on the runtime environment where the error happened.
 - To its [log directory](../getting-started/02_installation.md#create-a-fortress-home-directory) using a daily log file.
   <br>If your Fortress log directory is set to `/path/to/snicco-fortress/log`, errors will be logged at:
     - `/path/to/snicco-fortress/log/2023-01-01.fortress.log`
     - `/path/to/snicco-fortress/log/2023-01-30.fortress.log`
     - etc.
 
-**Important:** Fortress does not handle log rotation. This has to be addressed at the server level using a tool like [logrotate](https://linux.die.net/man/8/logrotate).
+Error logs are kept for three days. After that, they're deleted.
 
 ## Audit logs
 
@@ -58,4 +59,4 @@ If your Fortress log directory is set to `/path/to/snicco-fortress/log`, audit l
 - `/path/to/snicco-fortress/log/2023-01-30.audit.log`
 - etc.
 
-**Important:** Fortress does not handle log rotation. This has to be addressed at the server level using a tool like [logrotate](https://linux.die.net/man/8/logrotate).
+Audit logs are kept for three days. After that, they're deleted.

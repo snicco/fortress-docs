@@ -21,7 +21,6 @@
     * [Create a Fortress loader and activate Fortress](#create-a-fortress-loader-and-activate-fortress)
   * [Other considerations](#other-considerations)
     * [Full-page caching](#full-page-caching)
-    * [Log rotation](#log-rotation)
 <!-- TOC -->
 
 ---
@@ -659,45 +658,6 @@ if ($request_uri ~* "(/snicco-fortress.*)") {
  # YOUR CACHE EXCLUSION LOGIC GOES HERE.
  set $skip_cache 1;
  set $skip_reason "${skip_reason}-request_uri";
-}
-```
-
-### Log rotation
-
-Currently, Fortress does not perform log rotation itself.
-
-If you have a high-traffic site, you may want to configure
-automatic log rotation for the `fortress/var/log/*.log` files
-
-The below logrotate configuration is a good starting point:
-
-```log
-/path-to-fortress-home/var/log/*.log {
-  create 0600 domaincom domaincom
-  daily
-  rotate 7
-  missingok
-  notifempty
-  compress
-  sharedscripts
-}
-```
-
-- Replace `/path-to-fortress-home` with the full path to
-  your [Fortress home directory](#create-a-fortress-home-directory).
-- Replace `domaincom` with the system user that owns the WordPress files.
-
-For example:
-
-```log
-/var/www/snicco.io/fortress/var/log/*.log {
-  create 0600 snicco snicco
-  daily
-  rotate 7
-  missingok
-  notifempty
-  compress
-  sharedscripts
 }
 ```
 

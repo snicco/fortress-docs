@@ -49,8 +49,8 @@ Let's dive into how Fortress does error handling in practice.
   thrown in our test suite. Therefore, a [PHP Error](https://www.php.net/manual/en/errorfunc.constants.php) of any kind
   in Fortress's production build will be treated as a bug by us.
 
-- Each unexpected [PHP Error](https://www.php.net/manual/en/errorfunc.constants.php) in **WordPress core or third-party
-  ** plugins DURING Fortress HTTP request cycle will not be converted to an exception unless the severity
+- Each unexpected [PHP Error](https://www.php.net/manual/en/errorfunc.constants.php) in **WordPress core or third-party** plugins DURING Fortress HTTP request cycle will not be converted to an exception
+  unless the severity
   is `E_USER_ERROR` or higher in which case PHP would halt anyway.
 
 End users will never see a White Screen of Death.

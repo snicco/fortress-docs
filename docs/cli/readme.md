@@ -550,7 +550,7 @@ NAME
 
 DESCRIPTION
 
-  Displays information about all configuration sources
+  Displays information about defined configuration sources
 
 SYNOPSIS
 
@@ -559,7 +559,8 @@ SYNOPSIS
 OPTIONS
 
   [--source=<source>]
-    Only display a specific configuration source. If passed, the value must be one of the defined configuration sources.
+    Only display a specific configuration source. 
+    If passed, the value must be one of the defined configuration sources.
 
 EXAMPLES 
 
@@ -576,12 +577,18 @@ EXAMPLES
     "server": {
         "name": "server",
         "file_path": "/var/www/path-to-fortress.server.json",
-        "file_exists": false
+        "file_exists": false,
+        "environment": "all",
+        "shared_between_sites": true,
+        "must_exist": false
     },
     "site": {
         "name": "site",
         "file_path": "/var/www/path-to-fortress.site.json",
         "file_exists": true,
+        "environment": "all",
+        "shared_between_sites": false,
+        "must_exist": false,
         "content_decoded": {
             "code_freeze": {
                 "enabled": "no"
@@ -591,13 +598,16 @@ EXAMPLES
   }
   ---
 
-  # Only display a "site" configuration source
-  $ wp fort config ls --source=site
+  # Only display a "staging" configuration source that is marked as only used in staging environments
+  $ wp fort config ls --source=staging
   ---
   {
-    "name": "site",
-    "file_path": "/var/www/path-to-fortress.site.json",
+    "name": "staging",
+    "file_path": "/var/www/path-to-fortress.staging.json",
     "file_exists": true,
+    "environment": "staging",
+    "shared_between_sites": false,
+    "must_exist": false,
     "content_decoded": {
         "code_freeze": {
             "enabled": "no"
@@ -609,7 +619,7 @@ EXAMPLES
   # Pipe the output into the jq command to get compact output
   $ wp fort config ls --source=site | jq -c
   ---
-  {"name":"site","file_path":"/var/www/path-to-fortress.site.json","file_exists":true,"content_decoded":{"code_freeze":{"enabled":"no"}}}
+  {"name":"site","file_path":"/var/www/path-to-fortress.site.json","file_exists":true,"environment":"all","shared_between_sites":false,"must_exist":false,"content_decoded":{"code_freeze":{"enabled":"no"}}}
   ---
 
   # Output the decoded content of the "site" configuration source
@@ -638,6 +648,9 @@ MANUAL
      "name": "the name of the configuration source",
      "file_path": "absolute path to the configuration source file",
      "file_exists": "true if the file exists - This is determined by calling PHP's is_file() function.",
+     "environment": "The environment in which the configuration source is active, defaults to 'all'.",
+     "shared_between_sites": "true if the configuration source is marked as shared between multiple sites.",
+     "must_exist": "true if the configuration source is marked as required to exist.",
      "content_decoded": "The decoded content of the configuration source.
                          For PHP config sources, this means JSON encoding the returned array.
                          For JSON config sources, this means decoding the JSON string.
@@ -661,13 +674,19 @@ NAME
 
 DESCRIPTION
 
-  Optimize the "site" configuration source.
+  Optimize a configuration source. Supports both .json and .php sources.
 
 SYNOPSIS
 
   wp fort config optimize [--dry-run] [--reload]
 
 OPTIONS
+
+  [--source=<source>]
+    The source that should be optimized.
+    ---
+    default: site
+    ---
 
   [--dry-run]
     Default: false. Pass --dry-run to only print the changes to STDOUT without saving them.
@@ -679,6 +698,9 @@ EXAMPLES
 
   # Preview optimizations without saving them.
   $ wp fort config optimize --dry-run
+
+  # Optimize a defined configuration source name "foo"
+  $ wp fort config optimize --source=foo
 
   # Optimize the configuration but don't reload the configuration cache
   $ wp fort config optimize --no-reload
@@ -719,7 +741,7 @@ MANUAL
   is taken into account to determine if optimizations can be applied.
 
   Furthermore, any user-defined configuration values
-  in any configuration source are respected and never overwritten.
+  in any configuration source used in the current environment are respected and never overwritten.
 
   Currently this command can:
     - Disable support for legacy password hashes after all users have been upgraded.
@@ -728,15 +750,17 @@ MANUAL
   This command is **safe to be run as a periodic CRON job**.
   Applied changes never break a site.
 
+  The --source flag can be used to specify the configuration source to optimize.
+  If --source is not provided, the command uses tries to use a "site" configuration source.
+  If the specified configuration source does not exist, the command will error.
+  The command will also error if the specified configuration source is shared between sites.
+
   The --dry-run flag can be used to preview optimizations in STDOUT
   without saving them to the configuration source.
 
   If the configuration source has errors or warnings
   before the command is run, the command will error,
   not apply any changes and print the errors and warnings to STDERR.
-
-  Only JSON configuration files can be automatically optimized,
-  if the "site" configuration source is a PHP file, the command will error.
 
   The STDOUT of this command has the following structure IF
   any changes were made:
@@ -754,7 +778,7 @@ MANUAL
   STDOUT will be empty if no optimizations are available!
 
   There order of properties in the JSON output is not covered by the BC promise.
-  New properties might be added, however existing properties will not be removed.
+  New properties might be added, however, existing properties will not be removed.
 ```
 
 ### config test
@@ -778,7 +802,8 @@ OPTIONS
     Replaces the specified configuration source with the command's STDIN
     before merging all sources.
     Other sources will still be read from the configuration files.
-    The value must be one of the recognized configuration sources (appliance, server, site).
+    The value must be one of the defined configuration sources for the current environment.
+    If --stdin-source is used, the cache can NOT be reloaded.
 
   [--reload-on-success]
     Automatically reload the configuration cache if all sources are valid.
@@ -810,7 +835,7 @@ EXAMPLES
 MANUAL 
 
   This command tests that all configuration sources can be combined into
-  a valid configuration cache.
+  a valid configuration cache in the current WordPress environment.
 
   For details on how configuration is merged, cached, and reloaded, refer to the documentation:
   https://github.com/snicco/fortress/blob/beta/docs/configuration/01_how_to_configure_fortress.md#testing-and-reloading-the-configuration
@@ -840,7 +865,7 @@ NAME
 
 DESCRIPTION
 
-  Update the content of a configuration source.
+  Update the content of a configuration source. Supports .php and .json sources.
 
 SYNOPSIS
 
@@ -852,7 +877,11 @@ OPTIONS
     The changes to perform. Multiple changes can be performed in one command. Run `wp fort config update --help` for more information on syntax.
 
   [--source=<source>]
-    Default: "site". The configuration source that should be updated.
+    The configuration source that should be updated. 
+    Can not be a source that marked as shared between sites.
+    ---
+    default: site
+    ---
 
   [--dry-run]
     Default: false. Pass --dry-run to see the resulting configuration without writing it to disk.
@@ -880,8 +909,8 @@ EXAMPLES
   }
   ---
 
-  # Disable CodeFreeze (dry-run)
-  $ wp fort config update code_freeze.enabled=no --dry-run
+  # Disable CodeFreeze (dry-run) for a source named "user"
+  $ wp fort config update code_freeze.enabled=no --dry-run --source=user
   ---
   {
     "new_config": {

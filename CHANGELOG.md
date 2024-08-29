@@ -1,3 +1,12 @@
+# [1.0.0-beta.43](https://github.com/snicco/enterprise/compare/1.0.0-beta.42...1.0.0-beta.43) (2024-08-29)
+
+
+### Features
+
+* allow updating .php config sources with fortress cli ([85befab](https://github.com/snicco/enterprise/commit/85befabf08ed7b46e7bbee95b8997a3f45056902))
+* inbuilt logrotation for audit/fortress logs ([a3c454c](https://github.com/snicco/enterprise/commit/a3c454c36a3e7435110a2f49a4f7b1bcf2df2e0a))
+* unlimited, per-environment config sources ([2c3dc93](https://github.com/snicco/enterprise/commit/2c3dc9318f4489a80e084a0e7762dfcedb4d9370))
+
 # [1.0.0-beta.42](https://github.com/snicco/enterprise/compare/1.0.0-beta.41...1.0.0-beta.42) (2024-08-25)
 
 

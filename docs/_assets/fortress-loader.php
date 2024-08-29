@@ -82,14 +82,25 @@ declare(strict_types=1);
     | Point Fortress to configuration files
     |--------------------------------------------------------------------------
     |
-    | Neither the site config file nor the server config file have to exist,
+    | None of site config files, nor the server config file have to exist,
     | but it makes sense to define their locations upfront.
     |
     | "wp fort config update" will create the files as needed.
     |
     */
-    \define('SNICCO_FORTRESS_SITE_CONFIG_FILE', "{$fortress_directory}/config.json");
-    \define('SNICCO_FORTRESS_SERVER_CONFIG_FILE', '/etc/fortress/server.json');
+    \define('SNICCO_FORTRESS_CONFIG_SOURCES', [
+        'server' => [
+            'path' => '/etc/fortress/server.json',
+            'shared_between_sites' => true,
+        ],
+        'site' => [
+            'path' => "{$fortress_directory}/config.json",
+        ],
+        'site.staging' => [
+            'path' => "{$fortress_directory}/config.staging.json",
+            'environment' => 'staging',
+        ],
+    ]);
 
     /*
     |--------------------------------------------------------------------------

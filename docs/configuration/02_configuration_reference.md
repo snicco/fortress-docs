@@ -85,7 +85,7 @@ to provide syntax highlighting, auto-completion, and validation in your favorite
 - [Visual Studio Code: How to add custom schema sources](https://code.visualstudio.com/docs/languages/json).
 
 Below is the JSON representation of
-the Fortress [baseline configuration](01_how_to_configure_fortress.md#baseline-configuration)
+the Fortress baseline configuration
 for a (default) WordPress site:
 
 (The configuration for WordPress multisite is slightly different)

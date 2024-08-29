@@ -1,31 +1,27 @@
 # How to configure Fortress
 
 <!-- TOC -->
-* [Philosophy](#philosophy)
-* [How configuration is loaded](#how-configuration-is-loaded)
-* [Configuration sources](#configuration-sources)
-    * [Baseline configuration](#baseline-configuration)
-    * [Appliance configuration file](#appliance-configuration-file)
-    * [Server configuration file](#server-configuration-file)
-    * [Site configuration file](#site-configuration-file)
+* [How to configure Fortress](#how-to-configure-fortress)
+  * [Philosophy](#philosophy)
+  * [How configuration is loaded](#how-configuration-is-loaded)
+  * [Configuration sources](#configuration-sources)
     * [Example: How configuration sources are combined](#example-how-configuration-sources-are-combined)
-        * [Mering configuration values](#merging-configuration-values)
-        * [Except notation](#except-notation)
-        * [Locking configuration values](#locking-configuration-values)
+      * [Merging configuration values](#merging-configuration-values)
+      * [Except notation](#except-notation)
+      * [Locking configuration values](#locking-configuration-values)
     * [Viewing all configuration sources](#viewing-all-configuration-sources)
     * [Viewing the currently cached configuration](#viewing-the-currently-cached-configuration)
-* [Testing and reloading the configuration](#testing-and-reloading-the-configuration)
+  * [Testing and reloading the configuration](#testing-and-reloading-the-configuration)
     * [Configuration errors](#configuration-errors)
     * [Configuration warnings](#configuration-warnings)
     * [Testing configuration in CI/CD pipelines](#testing-configuration-in-cicd-pipelines)
-* [Updating configuration sources programmatically](#updating-configuration-sources-programmatically)
+  * [Updating configuration sources programmatically](#updating-configuration-sources-programmatically)
     * [Example usage](#example-usage)
     * [Other rules](#other-rules)
-* [Automatically optimize the configuration](#automatically-optimize-the-configuration)
-* [Configuration cache self-invalidation](#configuration-cache-self-invalidation)
+  * [Automatically optimize the configuration](#automatically-optimize-the-configuration)
+  * [Configuration cache self-invalidation](#configuration-cache-self-invalidation)
     * [Custom invalidation parameters](#custom-invalidation-parameters)
     * [Clear the cache automatically for git-based deployments](#clear-the-cache-automatically-for-git-based-deployments)
-
 <!-- TOC -->
 
 ## Philosophy
@@ -64,11 +60,12 @@ since PHP's OPCache caches the compiled configured.
 Configuration sources are just files, which makes it easy to version control
 them, and deploy them as part of a GIT-controlled site.
 
-🚨 Never change the cached configuration manually!
+🚨 Never change the **cached** configuration manually!
 
 ## Configuration sources
 
-Apart from its baseline configuration, Fortress takes three additional configuration
+Apart from its [baseline configuration](02_configuration_reference.md#overview),
+Fortress can use an unlimited number of configuration
 sources into account when building the configuration cache.
 
 A configuration source can be:
@@ -81,7 +78,7 @@ A configuration source can be:
     }
   }
   ```
-- A PHP file that returns an array.
+- A `.php` file that returns an array.
   ```php
   <?php
   
@@ -96,75 +93,94 @@ Both of the above are equivalent.
 PHP file configuration sources can contain any code that you want,
 as long as requiring the file returns an array.
 
-Each configuration source can overwrite settings from the previous one.
+Register configuration sources by defining the `SNICCO_FORTRESS_CONFIG_SOURCES` constant
+before Fortress boots. 
 
-Sources are merged in the following order:
-
-`baseline config < appliance config < server config < site config`
-
-You don't have to use all configuration sources if you don't need them.
-
-The [default Fortress loader](../_assets/fortress-loader.php) defines a
-server and site configuration source.
-
-- 🚨 All configuration sources should be stored outside the webroot!
-- 🚨 **Changes to configuration sources only take effect after the configuration cache is rebuilt**.
-
-### Baseline configuration
-
-The [baseline configuration](02_configuration_reference.md#overview) is defined inside Fortress's codebase.
-
-Never change the baseline configuration. You will lose all changes after updating Fortress.
-
-### Appliance configuration file
-
-Use the appliance configuration if you're a hosting or service provider,
-and you want to build a custom baseline configuration for your platform
-that should never be changed by end-users.
-
-To define an appliance config file, set the `SNICCO_FORTRESS_APPLIANCE_CONFIG_FILE` constant
-before Fortress boots,
-typically in
-your [Fortress loader](../getting-started/02_installation.md#create-a-fortress-loader-and-activate-fortress).
+A minimal example looks like this:
 
 ```php
-define('SNICCO_FORTRESS_APPLIANCE_CONFIG_FILE', '/etc/acme-host/fortress-defaults.json');
+define('SNICCO_FORTRESS_CONFIG_SOURCES', [
+    'site' => [
+        'path' => '/path-to-fortress-home/config.json',
+    ]
+]);
 ```
 
-If used, `SNICCO_FORTRESS_APPLIANCE_CONFIG_FILE` **MUST** be an existing file
-that is readable by the PHP process where Fortress runs.
+or, with a PHP configuration source:
 
-### Server configuration file
+```php
+define('SNICCO_FORTRESS_CONFIG_SOURCES', [
+    'site' => [
+        'path' => '/path-to-fortress-home/config.php',
+    ]
+]);
+```
 
-The purpose of a level-level configuration is to allow
-customizing Fortress configuration for **all** sites on a server.
+Valid settings for each configuration source are:
 
-The [default Fortress loader](../_assets/fortress-loader.php) sets the
-`SNICCO_FORTRESS_SERVER_CONFIG_FILE` constant to `/etc/fortress/server.json`.
+| Setting                | Description                                                                                                                                                  | Required | Default | Type               | Allowed Values                                                                                                                                                    |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `path`                 | The absolute path to the configuration file.                                                                                                                 | Yes      | -       | `non-empty-string` |                                                                                                                                                                   |
+| `must_exist`           | Whether the configuration file has to exist. The default of `false` allows predefining configuration sources in hosting integrations for site-owners to use. | No       | `false` | `boolean`          | `true`,`false`                                                                                                                                                    | `false`                                                                                                                                                           |
+| `shared_between_sites` | Whether multiple sites on a server use this configuration source                                                                                             | No       | `false` | `boolean`          | `true`,`false`                                                                                                                                                    |
+| `environment`          | The environment in which the configuration source is included. By default, a source is used in all WordPress environments.                                   | No       | -       | `non-empty-string` | `local`, `development`, `staging`, `production` <bre>See: [WordPress Environment Types](https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/)) |
 
-The server configuration file does not have to exist if the `SNICCO_FORTRESS_SERVER_CONFIG_FILE` constant is defined.
+The name of each configuration source must be unique, and a non-empty string.
 
-- If you're a hosting or service provider, you can pre-define a server configuration
-  file that your customers can change by setting the `SNICCO_FORTRESS_SERVER_CONFIG_FILE` constant
-  before Fortress boots.
-- If you're "self-hosting" Fortress and your server has only one site, you don't need to use server level configuration.
+- 🚨 For security reasons,
+misconfigured configuration sources will cause Fortress to refuse to boot and throw an exception.
+- 🚨 All configuration sources should be stored outside the webroot!
+- 🚨 Changes to configuration sources only take effect after the configuration cache is rebuilt.
 
-### Site configuration file
+The [default Fortress loader](../_assets/fortress-loader.php) defines
+the following configuration sources by default:
 
-You can define a per-site configuration with the `SNICCO_FORTRESS_SITE_CONFIG_FILE` constant.
+> Note: `<path-to-fortress-home>` is the configured [Fortress home directory](../getting-started/02_installation.md#create-a-fortress-home-directory).
 
-The [default Fortress loader](../_assets/fortress-loader.php) sets the
-`SNICCO_FORTRESS_SITE_CONFIG_FILE` constant to `/path-to-fortress-home/config.json`.
 
-The site configuration file does not have to exist if the `SNICCO_FORTRESS_SITE_CONFIG_FILE` constant is defined.
+```php
+\define('SNICCO_FORTRESS_CONFIG_SOURCES', [
+    'server' => [
+        'path' => '/etc/fortress/server.json',
+        'shared_between_sites' => true,
+    ],
+    'site' => [
+        'path' => "/<path-to-fortress-home>/config.json",
+    ],
+    'site.staging' => [
+        'path' => "/<path-to-fortress-home>/config.staging.json",
+        'environment' => 'staging',
+    ],
+]);
+```
+
+- A `server` configuration at `/etc/fortress/server.json` that can be used to set a base config for all sites on the server.
+- A `site` configuration at `/path-to-fortress-home/config.json` that is unique for the site and active in all environments.
+- A `site.staging` configuration at `/path-to-fortress-home/config.staging.json` that is unique for the site and only active in the staging environment.
+  The `site.staging` configuration can be used to override (parts of) the `site` configuration in the staging environment.
+
+It's completely optional to use custom configuration sources.
+You can use an unlimited number of configuration sources, or none at all.
+
+However, if you want to customize Fortress per-site,
+it's highly recommended to name this configuration source: `site`.
+This is because Fortress's [config CLI commands](#updating-configuration-sources-programmatically) use `site` as the fallback source name if no source name is explicitly provided.
 
 ### Example: How configuration sources are combined
 
-By default, each configuration source **replaces** keys defined in the previous sources.
+Configuration sources are merged in the order that they're defined in `SNICCO_FORTRESS_CONFIG_SOURCES`.
 
-To illustrate this concept, let's consider the following configuration sources:
+Using the defaults from above,
+Fortress loads its [baseline configuration](02_configuration_reference.md#overview) first.
+Then,the `server` configuration is loaded (if the file exists), followed by the `site` configuration,
+and if WordPress runs in the staging environment, the `site.staging` configuration is loaded last.
 
-**Appliance:**
+Each loaded configuration source can define a subset of configuration options
+that **replace** said options in the previous configuration source (or the baseline).
+
+To illustrate this concept, let's consider the following file contents.
+
+**server:**
 
 ```json
 {
@@ -181,7 +197,7 @@ This configuration source on its own would have the following effects:
 - TOTP setup can be skipped for 15 minutes. The baseline default of 30 minutes is overwritten.
 - All other configuration options would be inherited from the [baseline](02_configuration_reference.md#overview)
 
-Adding the below **server** configuration to the mix:
+**site:**
 
 ```json
 {
@@ -194,15 +210,15 @@ Adding the below **server** configuration to the mix:
 }
 ```
 
-would have the following effects on the final configuration:
+This would have the following effects on the final configuration:
 
-- Only `administrators` are `privileged_user_roles`. The baseline default of `["administrator", "editor"]` is
+- Only `administrators` are `privileged_user_roles`. The `baseline` default of `["administrator", "editor"]` is
   overwritten.
-- 2FA setup can still be skipped for 15 minutes. The value of the appliance config is maintained.
-- An account is locked after twenty failed TOTP attempts. The server config overwrites the value of the appliance
+- 2FA setup can still be skipped for 15 minutes. The value of the `server` config is maintained.
+- An account is locked after twenty failed TOTP attempts. The `site` config overwrites the value of the `server`
   config.
 
-Lastly, adding a site configuration (this time, as a PHP file for variety) with the below content:
+`site.staging` (this time, as a PHP file for variety) with the below content:
 
 ```php
 <?php
@@ -215,16 +231,16 @@ return [
 ]
 ```
 
-would have the following effects on the final configuration:
+**If** WordPress runs in the staging environment, the `site.staging` configuration would have the following effects on the final configuration:
 
-- Only `editors` are `privileged_user_roles`. The server config is **overwritten**, arrays are not merged by default.
-- 2FA setup can still be skipped for 15 minutes. The value of the appliance config is maintained.
-- An account is locked after thirty failed TOTP attempts. The site config overwrites the value of the server config.
+- Only `editors` are `privileged_user_roles`. The `site` config is **overwritten**, arrays are not merged by default.
+- 2FA setup can still be skipped for 15 minutes. The value of the `server` config is maintained.
+- An account is locked after thirty failed TOTP attempts. The `site.staging` config overwrites the value of the `site` config.
 
 #### Merging configuration values
 
 In the previous example,
-the site configuration completely overwrites the server configuration for the `privileged_user_roles` key.
+the `site.staging` configuration completely overwrites the `site` configuration for the `privileged_user_roles` key.
 
 Sometimes this is not what you want, and you'd rather add to the existing set of values.
 
@@ -232,20 +248,20 @@ For that, the special `:merge` notation can be used on any configuration option 
 
 The following combination of configuration sources
 
-- **Appliance**:
+- **foo**:
   ```json
   {
     "privileged_user_roles": ["administrator"]
   }
   ```
 
-- **Server**:
+- **bar**:
   ```json
   {
     "privileged_user_roles:merge": ["editor", "author"]
   }
   ```
-- **Site**:
+- **baz**:
   ```json
   {
     "privileged_user_roles:merge": ["contributor"]

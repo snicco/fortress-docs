@@ -34,21 +34,30 @@ provider does not integrate directly with Fortress, follow these steps for a **o
    <br>  
    Update this line:
     ```php
-    define('SNICCO_FORTRESS_SITE_CONFIG_FILE', "$fortress_directory/config.json");
-    ```
-   to:
-    ```php
-    define('SNICCO_FORTRESS_SITE_CONFIG_FILE', __DIR__.'/snicco-fortress/config.php');
+    \define('SNICCO_FORTRESS_CONFIG_SOURCES', [
+        'server' => [
+            'path' => '/etc/fortress/server.json',
+            'shared_between_sites' => true,
+        ],
+        'site' => [
+            'path' => __DIR__.'/snicco-fortress/config.php',
+        ],
+        'site.staging' => [
+            'path' => __DIR__.'/snicco-fortress/config.staging.php',
+            'environment' => 'staging',
+        ],
+    ]);
     ```
    Note that the file extension is now `.php` instead of `.json`. This ensures that your web server won't serve the file
-   as
-   plain text. Fortress supports both JSON and PHP files
+   as plain text. Fortress supports both JSON and PHP files
    for [configuration](../../configuration/01_how_to_configure_fortress.md).
-3. Set the permissions of `config.php` to `600 on` your staging and production site:
+3. Set the permissions of `config.php` and `config.staging.php` to `600 on` your staging and production site:
     ```shell
-    chmod 600 /path-to-mu-plugins/snicco-fortress/config.php
+    chmod 600 /path-to-mu-plugins/snicco-fortress/config.php /path-to-mu-plugins/snicco-fortress/config.staging.php
     ```
     - Replace `/path-to-mu-plugins/snicco-fortress/config.php` with the path to your site's mu-plugins directory.
+    - Replace `/path-to-mu-plugins/snicco-fortress/config.staging.php` with the path to your site's mu-plugins directory.
+4. If your staging sites are on entirely different server, you should remove the `server` configuration source entirely, or copy it to your staging server.
 
 ### Advantages
 
