@@ -1,3 +1,14 @@
+# [1.0.0-beta.44](https://github.com/snicco/enterprise/compare/1.0.0-beta.43...1.0.0-beta.44) (2024-09-03)
+
+
+### Features
+
+* atomic updates to config files with 0600 permissions ([9472d70](https://github.com/snicco/enterprise/commit/9472d70a3f470eea0af9827a13f9a51fdf2aa006)), closes [#165](https://github.com/snicco/enterprise/issues/165)
+* create log and cache dirs on demand if not existing ([86b7b09](https://github.com/snicco/enterprise/commit/86b7b09a073ad5c43206433f5a670c7128debaae))
+* create log and cache dirs on demand if not existing ([626d2fb](https://github.com/snicco/enterprise/commit/626d2fb6bbc3b2f3d74429d5adcb4ee549a3d198))
+* never allow config reload with --skip-stateful-checks ([8f9b483](https://github.com/snicco/enterprise/commit/8f9b48316be880ce67ab1eaf5c9c4ba1773fed21))
+* throw exception on duplicate config source paths ([6af6676](https://github.com/snicco/enterprise/commit/6af6676d49288440c15b82723e1f6ab24b9e15aa))
+
 # [1.0.0-beta.43](https://github.com/snicco/enterprise/compare/1.0.0-beta.42...1.0.0-beta.43) (2024-08-29)
 
 

@@ -50,7 +50,7 @@ declare(strict_types=1);
     */
     if (! \is_file("{$fortress_directory}/secrets.php")) {
         $msg = \sprintf(
-            "Incomplete Fortress installation detected: A Fortress loader was included from '%s' but the expected Fortress secrets does not exist at '%s'.\n\tDid you maybe migrate your site to a different hosting company and forgot to remove Fortress?",
+            "Incomplete Fortress installation detected: A Fortress loader was included from '%s' but the expected Fortress secrets do not exist at '%s'.\n\tDid you maybe migrate your site to a different hosting company and forgot to remove Fortress?",
             __FILE__,
             "{$fortress_directory}/secrets.php"
         );
@@ -62,7 +62,7 @@ declare(strict_types=1);
 
     /*
     |--------------------------------------------------------------------------
-    | Define all required secrets
+    | Include secrets
     |--------------------------------------------------------------------------
     |
     */
@@ -70,28 +70,21 @@ declare(strict_types=1);
 
     /*
     |--------------------------------------------------------------------------
-    | Point Fortress to the correct directories
-    |--------------------------------------------------------------------------
-    |
-    */
-    \define('SNICCO_FORTRESS_CACHE_DIR', "{$fortress_directory}/var/cache");
-    \define('SNICCO_FORTRESS_LOG_DIR', "{$fortress_directory}/var/log");
-
-    /*
-    |--------------------------------------------------------------------------
     | Point Fortress to configuration files
     |--------------------------------------------------------------------------
     |
-    | None of site config files, nor the server config file have to exist,
-    | but it makes sense to define their locations upfront.
-    |
-    | "wp fort config update" will create the files as needed.
+    | See: https://github.com/snicco/fortress/blob/beta/docs/configuration/01_how_to_configure_fortress.md#how-to-configure-fortress
     |
     */
     \define('SNICCO_FORTRESS_CONFIG_SOURCES', [
         'server' => [
             'path' => '/etc/fortress/server.json',
             'shared_between_sites' => true,
+        ],
+        'server.staging' => [
+            'path' => '/etc/fortress/server.staging.json',
+            'shared_between_sites' => true,
+            'environment' => 'staging',
         ],
         'site' => [
             'path' => "{$fortress_directory}/config.json",
