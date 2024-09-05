@@ -1,3 +1,10 @@
+# [1.0.0-beta.45](https://github.com/snicco/enterprise/compare/1.0.0-beta.44...1.0.0-beta.45) (2024-09-05)
+
+
+### Features
+
+* faster boot cache, with atomic cache + opcache invalidation from cli ([860c246](https://github.com/snicco/enterprise/commit/860c2467e3aa431b9b0c19be69285cc1d6508213)), closes [#166](https://github.com/snicco/enterprise/issues/166)
+
 # [1.0.0-beta.44](https://github.com/snicco/enterprise/compare/1.0.0-beta.43...1.0.0-beta.44) (2024-09-03)
 
 
