@@ -1,3 +1,15 @@
+# [1.0.0-beta.46](https://github.com/snicco/enterprise/compare/1.0.0-beta.45...1.0.0-beta.46) (2024-09-07)
+
+
+### Features
+
+* allow running basic cli commands without generated secrets ([8a21046](https://github.com/snicco/enterprise/commit/8a210465054a9e78ade3a434fcfc40260a4a2491))
+
+
+### Performance Improvements
+
+* lazy load password-pluggable functions for as long as possible ([89b9aac](https://github.com/snicco/enterprise/commit/89b9aacdfb00e6a0aeb094bea8c0d6a33f518c4c))
+
 # [1.0.0-beta.45](https://github.com/snicco/enterprise/compare/1.0.0-beta.44...1.0.0-beta.45) (2024-09-05)
 
 
